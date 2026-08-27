@@ -129,23 +129,23 @@ function WearingStory() {
   React.useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-    let ticking = false;
+    let raf = 0;
     const update = () => {
       const rect = section.getBoundingClientRect();
-      const scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
-      setActive(Math.min(story.length - 1, Math.floor(progress * story.length)));
-      ticking = false;
+      const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const progress = Math.max(0, Math.min(1, -rect.top / travel));
+      const next = Math.min(story.length - 1, Math.floor(progress * story.length));
+      setActive((value) => value === next ? value : next);
+      raf = 0;
     };
-    const onScroll = () => {
-      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
-    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', update);
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', update);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, []);
 
@@ -159,18 +159,22 @@ function WearingStory() {
             <p className="section-kicker">THE ART OF WEARING</p>
             <h2>Not a trend.<br /><em>A point of view.</em></h2>
             <p className="wearing-editorial__body">ArtCanvas brings clothing, objects and visual culture into one considered space — less catalogue, more curation.</p>
+            <Link className="wearing-editorial__intro-link" to="/shop?category=clothing">Enter the collection <ArrowUpRight size={14} /></Link>
           </div>
         </div>
-        <div className="wearing-editorial__visual">
+
+        <div className="wearing-editorial__visual" aria-live="polite">
           {story.map((item, index) => (
-            <motion.div key={item.id} className="wearing-frame" initial={false} animate={{ opacity: active === index ? 1 : 0, scale: active === index ? 1 : .975, x: active === index ? 0 : 24 }} transition={{ duration: .7, ease: [0.16, 1, 0.3, 1] }}>
-              <img src={img(item.seed, 1050, 1250)} alt={`${item.title} clothing editorial`} />
+            <motion.div key={item.id} className="wearing-frame" initial={false} animate={{ opacity: active === index ? 1 : 0, scale: active === index ? 1 : 1.035, x: active === index ? 0 : index < active ? -20 : 20 }} transition={{ duration: .8, ease: [0.16, 1, 0.3, 1] }}>
+              <img src={img(item.seed, 1100, 1320)} alt={`${item.title} clothing editorial`} />
               <div className="wearing-frame__veil" />
-              <div className="wearing-frame__top"><span>{item.number} / 03</span><span>ARTCANVAS</span></div>
+              <div className="wearing-frame__top"><span>{item.number} / 03</span><span>ARTCANVAS / CLOTHING</span></div>
               <div className="wearing-frame__caption"><span>{item.line}</span><strong>{item.title}</strong></div>
             </motion.div>
           ))}
+          <div className="wearing-editorial__scanline" />
         </div>
+
         <div className="wearing-editorial__info">
           <AnimatePresence mode="wait">
             <motion.div key={current.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: .45 }}>
@@ -181,16 +185,14 @@ function WearingStory() {
             </motion.div>
           </AnimatePresence>
         </div>
+
         <div className="wearing-editorial__progress" aria-hidden="true">
           {story.map((item, index) => <span key={item.id} className={active === index ? 'is-active' : ''}><i />{item.number}</span>)}
         </div>
+        <div className="wearing-editorial__scroll-label"><span>SCROLL TO MOVE</span><i /></div>
       </div>
       <div className="wearing-editorial__steps" aria-hidden="true">
-        {story.map((item, index) => (
-          <article key={item.id} className={`wearing-step ${active === index ? 'is-active' : ''}`}>
-            <span>{item.number}</span><div><p>{item.title}</p><small>{item.line}</small></div>
-          </article>
-        ))}
+        {story.map((item, index) => <article key={item.id} className={`wearing-step ${active === index ? 'is-active' : ''}`}><span>{item.number}</span><div><p>{item.title}</p><small>{item.line}</small></div></article>)}
       </div>
     </section>
   );
