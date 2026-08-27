@@ -15,7 +15,7 @@ export default function Gallery() {
         <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-12 max-w-xl">
             <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-3">The Gallery</p>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">Original works, hung the way they were meant to be seen.</h1>
+            <h1 className="font-display italic text-4xl sm:text-5xl font-black tracking-tight mb-4">Original works, hung the way they were meant to be seen.</h1>
             <p className="text-sm opacity-60">Each piece is signed, dated and released in a limited edition. Click a work to view materials, dimensions and the story behind it.</p>
           </motion.div>
 

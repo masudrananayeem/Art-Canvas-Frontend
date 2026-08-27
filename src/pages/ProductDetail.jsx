@@ -3,8 +3,8 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, Star, Plus, Minus, Share2, Truck } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import ProductCard from "../components/ProductCard";
-import Reveal, { Stagger } from "../components/Reveal";
+import BentoGrid from "../components/BentoGrid";
+import Reveal from "../components/Reveal";
 import { getProduct, related, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
@@ -26,7 +26,7 @@ export default function ProductDetail() {
 
   return (
     <PageTransition>
-      <section className="px-6 pt-14 pb-20">
+      <section className="px-6 pt-10 pb-20">
         <div className="max-w-6xl mx-auto">
           <p className="text-xs opacity-50 mb-8">
             <Link to="/shop" className="hover:underline">Shop</Link> / <Link to={`/shop?category=${product.category}`} className="hover:underline capitalize">{product.category}</Link> / <span className="opacity-80">{product.name}</span>
@@ -44,7 +44,7 @@ export default function ProductDetail() {
 
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
               <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-2">{product.category}</p>
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">{product.name}</h1>
+              <h1 className="font-display italic text-3xl sm:text-4xl font-black tracking-tight mb-3">{product.name}</h1>
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -94,13 +94,9 @@ export default function ProductDetail() {
           {relatedItems.length > 0 && (
             <div className="mt-24">
               <Reveal>
-                <h2 className="text-2xl font-black tracking-tight mb-6">You might also like</h2>
+                <h2 className="font-display italic text-2xl font-black tracking-tight mb-6">You might also like</h2>
               </Reveal>
-              <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {relatedItems.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </Stagger>
+              <BentoGrid products={relatedItems} pattern={[1, 1, 1, 1]} />
             </div>
           )}
         </div>

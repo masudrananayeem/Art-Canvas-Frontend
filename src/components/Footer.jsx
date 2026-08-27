@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className={`px-6 pt-16 pb-8 ${dark ? "bg-white/5" : "bg-black text-white"}`}>
       <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-10 mb-12">
         <div>
-          <p className="text-xl font-black tracking-tight mb-3">ARTCANVAS</p>
+          <p className="font-display italic text-xl font-black tracking-tight mb-3">ArtCanvas</p>
           <p className="text-sm opacity-60 max-w-xs">ArtCanvas is a premium studio platform blending fashion, art and design into one collection.</p>
         </div>
         <div>

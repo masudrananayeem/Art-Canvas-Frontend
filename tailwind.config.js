@@ -2,7 +2,18 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        display: ["Fraunces", "serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
+      colors: {
+        rust: "#A8431E",
+        sage: "#5B6B4F",
+        sand: "#FAF7F1",
+        ink: "#111110",
+      },
+    },
   },
   plugins: [],
 };

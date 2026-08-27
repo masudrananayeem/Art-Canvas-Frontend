@@ -3,9 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shirt, Sparkles, Gift, ChevronDown, X, SlidersHorizontal, ArrowUpRight } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import ProductCard from "../components/ProductCard";
-import { Stagger } from "../components/Reveal";
-import { CATEGORIES, GENDERS, PRODUCTS, img } from "../data/products";
+import BentoGrid from "../components/BentoGrid";
+import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 // Art has its own dedicated Gallery experience — Shop stays focused on wearables & objects.
@@ -22,6 +21,7 @@ export default function Shop() {
   const [params, setParams] = useSearchParams();
   const active = params.get("category") || "all";
   const gender = params.get("gender") || "all";
+  const sub = params.get("sub") || "all";
   const [sort, setSort] = useState("Featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
@@ -31,27 +31,38 @@ export default function Shop() {
     const next = new URLSearchParams(params);
     if (id === "all") next.delete("category");
     else next.set("category", id);
+    next.delete("sub");
     setParams(next);
   };
   const setGender = (id) => {
     const next = new URLSearchParams(params);
     if (id === "all") next.delete("gender");
     else next.set("gender", id);
+    next.delete("sub");
     setParams(next);
   };
+  const setSub = (id) => {
+    const next = new URLSearchParams(params);
+    if (id === "all") next.delete("sub");
+    else next.set("sub", id);
+    setParams(next);
+  };
+
+  const availableSubs = gender !== "all" ? SUBCATEGORIES[gender] || [] : [];
 
   const filtered = useMemo(() => {
     let list = active === "all" ? SHOP_PRODUCTS : SHOP_PRODUCTS.filter((p) => p.category === active);
     if (gender !== "all") list = list.filter((p) => p.gender === gender || p.gender === "unisex");
+    if (sub !== "all") list = list.filter((p) => p.subcategory === sub);
     list = list.filter((p) => p.price <= maxPrice);
     list = [...list];
     if (sort === "Price: Low to High") list.sort((a, b) => a.price - b.price);
     if (sort === "Price: High to Low") list.sort((a, b) => b.price - a.price);
     if (sort === "Top Rated") list.sort((a, b) => b.rating - a.rating);
     return list;
-  }, [active, gender, sort, maxPrice]);
+  }, [active, gender, sub, sort, maxPrice]);
 
-  const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
+  const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sub !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
   const clearFilters = () => {
     setParams({});
     setMaxPrice(MAX_PRICE);
@@ -111,6 +122,35 @@ export default function Shop() {
             </button>
           ))}
         </div>
+        <AnimatePresence>
+          {availableSubs.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <p className="text-xs tracking-widest uppercase opacity-40 mt-4 mb-2">Sub-category</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSub("all")}
+                  className={`px-3 py-1 rounded-full text-[11px] border transition ${sub === "all" ? (dark ? "bg-white/15 border-white/30" : "bg-black/10 border-black/20") : dark ? "border-white/10 opacity-70" : "border-black/10 opacity-70"}`}
+                >
+                  All
+                </button>
+                {availableSubs.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSub(s)}
+                    className={`px-3 py-1 rounded-full text-[11px] border transition ${sub === s ? (dark ? "bg-white/15 border-white/30" : "bg-black/10 border-black/20") : dark ? "border-white/10 opacity-70" : "border-black/10 opacity-70"}`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div>
@@ -150,10 +190,10 @@ export default function Shop() {
 
   return (
     <PageTransition>
-      <section className="px-6 pt-16 pb-4">
+      <section className="px-6 pt-10 pb-4">
         <div className="max-w-6xl mx-auto">
           <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-2">Give All You Need</p>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight">THE COLLECTION</h1>
+          <h1 className="font-display italic text-4xl sm:text-5xl font-black tracking-tight">The Collection</h1>
         </div>
       </section>
 
@@ -216,6 +256,25 @@ export default function Shop() {
                         </button>
                       ))}
                     </div>
+                    {availableSubs.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <button
+                          onClick={() => setSub("all")}
+                          className={`px-3 py-1 rounded-full text-[11px] border ${sub === "all" ? (dark ? "bg-white/15 border-white/30" : "bg-black/10 border-black/20") : dark ? "border-white/10 opacity-70" : "border-black/10 opacity-70"}`}
+                        >
+                          All
+                        </button>
+                        {availableSubs.map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setSub(s)}
+                            className={`px-3 py-1 rounded-full text-[11px] border ${sub === s ? (dark ? "bg-white/15 border-white/30" : "bg-black/10 border-black/20") : dark ? "border-white/10 opacity-70" : "border-black/10 opacity-70"}`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Max Price: ${maxPrice}</p>
@@ -268,11 +327,7 @@ export default function Shop() {
             </div>
 
             <AnimatePresence mode="wait">
-              <Stagger key={active + sort + gender + maxPrice} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {filtered.map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-              </Stagger>
+              <BentoGrid key={active + sort + gender + sub + maxPrice} products={filtered} />
             </AnimatePresence>
 
             {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">No pieces found. Try adjusting your filters.</p>}

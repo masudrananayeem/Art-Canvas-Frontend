@@ -2,8 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import ProductCard from "../components/ProductCard";
-import { Stagger } from "../components/Reveal";
+import BentoGrid from "../components/BentoGrid";
 import { PRODUCTS } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
@@ -13,9 +12,9 @@ export default function Wishlist() {
 
   return (
     <PageTransition>
-      <section className="px-6 pt-16 pb-24">
+      <section className="px-6 pt-10 pb-24">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-black tracking-tight mb-2">YOUR WISHLIST</h1>
+          <h1 className="font-display italic text-4xl font-black tracking-tight mb-2">Your Wishlist</h1>
           <p className="text-sm opacity-60 mb-10">{items.length} saved piece{items.length !== 1 ? "s" : ""}</p>
 
           {items.length === 0 ? (
@@ -27,11 +26,7 @@ export default function Wishlist() {
               </Link>
             </div>
           ) : (
-            <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {items.map((p) => (
-                <ProductCard key={p.id} p={p} />
-              ))}
-            </Stagger>
+            <BentoGrid products={items} />
           )}
         </div>
       </section>

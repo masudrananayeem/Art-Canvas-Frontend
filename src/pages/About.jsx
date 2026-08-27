@@ -16,10 +16,10 @@ export default function About() {
   const { dark } = useStore();
   return (
     <PageTransition>
-      <section className="px-6 pt-20 pb-16 text-center">
+      <section className="px-6 pt-14 pb-16 text-center">
         <Reveal>
           <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-4">Est. 2026 · Studio Made</p>
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight mb-6">REDEFINING MODERN COMMERCE</h1>
+          <h1 className="font-display italic text-4xl sm:text-6xl font-black tracking-tight mb-6">Redefining Modern Commerce</h1>
           <p className="max-w-2xl mx-auto opacity-70">
             ArtCanvas is a studio destination for wearable art and curated objects. We blend aesthetic design with honest craft to bring you pieces worth keeping.
           </p>
@@ -32,7 +32,7 @@ export default function About() {
             <img src={img("ac-about-studio", 800, 600)} alt="Studio" className="w-full h-full object-cover" />
           </Reveal>
           <Reveal delay={0.1}>
-            <h2 className="text-3xl font-black tracking-tight mb-4">OUR STORY</h2>
+            <h2 className="font-display italic text-3xl font-black tracking-tight mb-4">Our Story</h2>
             <p className="opacity-75 leading-relaxed mb-4 text-sm">
               Born from a vision to simplify how art and fashion reach people, without compromising on craft. ArtCanvas started as a small studio project and grew into a place that connects makers with people who care about what they wear and keep.
             </p>
@@ -46,7 +46,7 @@ export default function About() {
       <section className={`px-6 py-20 ${dark ? "bg-white/5" : "bg-black text-white"}`}>
         <div className="max-w-6xl mx-auto text-center">
           <Reveal>
-            <h2 className="text-3xl font-black tracking-tight mb-2">CORE VALUES</h2>
+            <h2 className="font-display italic text-3xl font-black tracking-tight mb-2">Core Values</h2>
             <p className="opacity-60 mb-12">The principles that guide everything we build and curate.</p>
           </Reveal>
           <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
