@@ -17,3 +17,11 @@ html, body, #root {
   background: #A8431E;
   color: #FAF7F1;
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -8,24 +8,48 @@ export const CATEGORIES = [
   { id: "gifts", name: "Gifts", desc: "Curated boxes for the discerning.", seed: "ac-cat-gifts" },
 ];
 
+export const GENDERS = [
+  { id: "all", name: "All" },
+  { id: "women", name: "Women" },
+  { id: "men", name: "Men" },
+  { id: "unisex", name: "Unisex" },
+];
+
 const NAMES = {
-  clothing: ["Fragment Overcoat", "Oxide Trouser", "Linen Field Shirt", "Raw Edge Hoodie", "Sculpted Blazer", "Ash Denim Jacket"],
+  clothing: [
+    ["Fragment Overcoat", "women"],
+    ["Oxide Trouser", "men"],
+    ["Linen Field Shirt", "men"],
+    ["Raw Edge Hoodie", "unisex"],
+    ["Sculpted Blazer", "women"],
+    ["Ash Denim Jacket", "unisex"],
+    ["Draped Silk Slip", "women"],
+    ["Heavyweight Chino", "men"],
+  ],
   art: ["Study in Ochre No.3", "Quiet Fracture Print", "Untitled (Terrain)", "Interior Weather", "Slow Erosion", "Marginalia I"],
   objects: ["Poured Ceramic Vessel", "Desk Monolith", "Ash Bowl Set", "Ribbed Candlestick", "Stone Tray"],
-  accessories: ["Folded Leather Bag", "Signet Ring", "Oxide Leather Belt", "Woven Card Case", "Brass Cuff"],
+  accessories: [
+    ["Folded Leather Bag", "women"],
+    ["Signet Ring", "men"],
+    ["Oxide Leather Belt", "unisex"],
+    ["Woven Card Case", "unisex"],
+    ["Brass Cuff", "women"],
+  ],
   gifts: ["The Maker's Box", "Small Works Print Set", "Studio Candle Duo", "Print & Paper Set"],
 };
 
 function buildProducts() {
   const out = [];
   let id = 1;
-  Object.entries(NAMES).forEach(([cat, names]) => {
-    names.forEach((name, i) => {
+  Object.entries(NAMES).forEach(([cat, entries]) => {
+    entries.forEach((entry, i) => {
       const isArt = cat === "art";
+      const [name, gender] = Array.isArray(entry) ? entry : [entry, "unisex"];
       out.push({
         id: id++,
         name,
         category: cat,
+        gender: isArt || cat === "objects" || cat === "gifts" ? "unisex" : gender,
         price: isArt ? 220 + i * 65 : cat === "objects" ? 90 + i * 30 : 38 + i * 18,
         rating: (4.3 + ((i * 7) % 6) / 10).toFixed(1),
         reviews: 40 + ((i * 37) % 200),

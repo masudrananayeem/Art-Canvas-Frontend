@@ -49,7 +49,7 @@ export default function About() {
             <h2 className="text-3xl font-black tracking-tight mb-2">CORE VALUES</h2>
             <p className="opacity-60 mb-12">The principles that guide everything we build and curate.</p>
           </Reveal>
-          <Stagger className="grid sm:grid-cols-4 gap-8">
+          <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
             {VALUES.map(([Icon, title, desc], i) => (
               <StaggerItem key={i}>
                 <div className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4 ${dark ? "bg-white/10" : "bg-white/10"}`}>

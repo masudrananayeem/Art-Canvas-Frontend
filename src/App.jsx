@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import MobileMenu from "./components/MobileMenu";
 import CartDrawer from "./components/CartDrawer";
+import ScrollProgress from "./components/ScrollProgress";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -21,6 +22,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-500 ${dark ? "bg-[#111110] text-[#EDE7D9]" : "bg-[#FAF7F1] text-[#111110]"}`}>
+      <ScrollProgress />
       <Navbar onMenu={() => setMenuOpen(true)} />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 

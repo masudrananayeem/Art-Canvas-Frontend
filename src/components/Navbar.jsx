@@ -7,6 +7,7 @@ import { useStore } from "../context/StoreContext";
 const LINKS = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
+  { to: "/gallery", label: "Gallery" },
   { to: "/wishlist", label: "Wishlist" },
   { to: "/about", label: "About" },
 ];

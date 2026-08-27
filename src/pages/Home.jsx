@@ -6,6 +6,7 @@ import PageTransition from "../components/PageTransition";
 import Marquee from "../components/Marquee";
 import ProductCard from "../components/ProductCard";
 import Reveal, { Stagger, StaggerItem } from "../components/Reveal";
+import FeatureSpotlight from "../components/FeatureSpotlight";
 import { CATEGORIES, PRODUCTS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
@@ -21,10 +22,12 @@ export default function Home() {
 
   return (
     <PageTransition>
-      <Marquee />
+      <div className="pt-20 sm:pt-24">
+        <Marquee />
+      </div>
 
       {/* Hero */}
-      <section className="relative px-6 pt-16 pb-6 overflow-hidden">
+      <section className="relative px-6 pt-12 sm:pt-16 pb-6 overflow-hidden">
         <div className="max-w-6xl mx-auto relative">
           {/* Oversized wordmark behind hero image */}
           <motion.h2
@@ -52,7 +55,7 @@ export default function Home() {
               <motion.h1
                 variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="text-6xl sm:text-7xl font-black tracking-tight leading-[0.95] mb-6"
+                className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] mb-6"
               >
                 WEAR THE
                 <br />
@@ -68,7 +71,7 @@ export default function Home() {
                   </Link>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                  <Link to="/shop?category=art" className="inline-block px-6 py-3 rounded-full text-xs font-semibold tracking-wider uppercase border border-current/25">
+                  <Link to="/gallery" className="inline-block px-6 py-3 rounded-full text-xs font-semibold tracking-wider uppercase border border-current/25">
                     Enter the Gallery
                   </Link>
                 </motion.div>
@@ -98,6 +101,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Studio Spotlight — scroll-triggered reveal */}
+      <FeatureSpotlight products={PRODUCTS.slice(2, 6)} />
+
       {/* Trust bar */}
       <section className={`px-6 py-6 ${dark ? "bg-white/5" : "bg-black text-white"}`}>
         <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
@@ -124,10 +130,10 @@ export default function Home() {
           <Reveal>
             <h2 className="text-3xl font-black tracking-tight mb-6">SHOP BY CATEGORY</h2>
           </Reveal>
-          <Stagger className={`grid sm:grid-cols-5 gap-4 p-6 rounded-2xl ${dark ? "bg-white/5" : "bg-black text-white"}`}>
+          <Stagger className={`grid grid-cols-2 sm:grid-cols-5 gap-4 p-6 rounded-2xl ${dark ? "bg-white/5" : "bg-black text-white"}`}>
             {CATEGORIES.map((c) => (
               <StaggerItem key={c.id}>
-                <Link to={`/shop?category=${c.id}`} className="text-left group block">
+                <Link to={c.id === "art" ? "/gallery" : `/shop?category=${c.id}`} className="text-left group block">
                   <div className="aspect-[3/4] overflow-hidden rounded-xl mb-3">
                     <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.5 }} src={img(c.seed, 300, 400)} alt={c.name} className="w-full h-full object-cover" />
                   </div>
