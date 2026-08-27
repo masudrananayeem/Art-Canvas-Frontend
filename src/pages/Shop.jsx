@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Shirt, Sparkles, Gift, ChevronDown, X, SlidersHorizontal, ArrowUpRight } from "lucide-react";
+import { Package, Shirt, Sparkles, Gift, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import BentoGrid from "../components/BentoGrid";
+import ProductCard from "../components/ProductCard";
 import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
@@ -192,10 +192,22 @@ export default function Shop() {
     <PageTransition>
       <section className="px-6 pt-10 pb-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-2">Give All You Need</p>
-          <h1 className="font-display italic text-4xl sm:text-5xl font-black tracking-tight">The Collection</h1>
+          <p className="text-[9px] tracking-[0.25em] uppercase opacity-50 mb-2">04 — The collection</p>
+          <h1 className="font-display italic text-4xl sm:text-6xl font-black tracking-[-.04em]">The Collection</h1>
+          <p className="max-w-2xl mt-4 text-sm opacity-55 leading-relaxed">Clothing is organized into <b>Women, Men and Children</b>, with dedicated sub-categories. Pick a person, then narrow the silhouette.</p>
         </div>
       </section>
+
+      {active === "clothing" && (
+        <section className="px-6 pb-8">
+          <div className="max-w-6xl mx-auto border-y border-current/10 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div><p className="text-[9px] tracking-[.25em] uppercase opacity-45">Clothing / Browse by</p><p className="font-display italic text-2xl font-bold mt-1">Women · Men · Children</p></div>
+            <div className="flex flex-wrap gap-2">
+              {GENDERS.filter(g => g.id !== "all").map(g => <Link key={g.id} to={`/shop?category=clothing&gender=${g.id}`} className="px-3 py-1.5 rounded-full border border-current/15 text-[10px] uppercase tracking-wider hover:bg-current/5 transition">{g.name}</Link>)}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="px-6 pb-24">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[240px_1fr] gap-8">
@@ -327,7 +339,19 @@ export default function Shop() {
             </div>
 
             <AnimatePresence mode="wait">
-              <BentoGrid key={active + sort + gender + sub + maxPrice} products={filtered} />
+              <motion.div
+                key={active + sort + gender + sub + maxPrice}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: .35 }}
+                className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 items-start"
+              >
+                {filtered.map((p, i) => (
+                  <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
+                    <ProductCard p={p} size="md" />
+                  </motion.div>
+                ))}
+              </motion.div>
             </AnimatePresence>
 
             {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">No pieces found. Try adjusting your filters.</p>}

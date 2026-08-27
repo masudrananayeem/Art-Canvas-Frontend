@@ -1,209 +1,200 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Truck, PackageCheck, ShieldCheck, Lock, Star, ArrowRight, ArrowUpRight } from "lucide-react";
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
+import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import Marquee from "../components/Marquee";
-import BentoGrid from "../components/BentoGrid";
 import Reveal, { Stagger, StaggerItem } from "../components/Reveal";
-import FeatureSpotlight from "../components/FeatureSpotlight";
-import { CATEGORIES, PRODUCTS, img } from "../data/products";
-import { useStore } from "../context/StoreContext";
+import { PRODUCTS, SUBCATEGORIES, img } from "../data/products";
 
-const TESTIMONIALS = [
-  ["The quality is unmatched. Fabrics feel premium and the fit is perfect — ArtCanvas is my go-to now.", "Sarah J.", "Fashion Enthusiast"],
-  ["I was looking for something versatile and artistic, and the new drop exceeded expectations. Fast shipping too.", "Michael T.", "Verified Buyer"],
-  ["Obsessed with the attention to detail. Every piece looks exactly like the photos, if not better.", "Emily R.", "Style Blogger"],
+const PEOPLE = [
+  { id: "women", name: "Women", index: "01", line: "Soft structure / sharp attitude", seed: "ac-women-editorial" },
+  { id: "men", name: "Men", index: "02", line: "Quiet tailoring / everyday form", seed: "ac-men-editorial" },
+  { id: "kids", name: "Children", index: "03", line: "Playful proportions / easy movement", seed: "ac-kids-editorial" },
 ];
 
-// Bento tile spans for the category grid — 2x2, 1x2, 1x1 mixed on a 4-col / 6-row canvas.
-const CAT_TILES = {
-  clothing: "sm:col-span-2 sm:row-span-2 aspect-square sm:aspect-auto",
-  art: "sm:col-span-2 aspect-[3/2] sm:aspect-auto",
-  objects: "aspect-square",
-  accessories: "aspect-square",
-  gifts: "sm:col-span-2 aspect-[3/2] sm:aspect-auto",
-};
+const EDIT = PRODUCTS.filter((p) => p.category === "clothing").slice(0, 6);
 
-export default function Home() {
-  const { dark } = useStore();
-  const featured = PRODUCTS.slice(0, 10);
-
+function SplitLine({ children, delay = 0 }) {
   return (
-    <PageTransition>
-      <Marquee />
+    <span className="split-line"><motion.span initial={{ y: "105%" }} animate={{ y: 0 }} transition={{ duration: .9, delay, ease: [0.16, 1, 0.3, 1] }}>{children}</motion.span></span>
+  );
+}
 
-      {/* Hero — asymmetric bento composition */}
-      <section className="px-6 pt-10 sm:pt-14 pb-6">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-3 sm:grid-rows-2 gap-4 sm:h-[560px]">
-          {/* Big image tile */}
+function MagneticLink({ children, className = "", to }) {
+  const ref = useRef(null);
+  const x = useSpring(0, { stiffness: 280, damping: 18 });
+  const y = useSpring(0, { stiffness: 280, damping: 18 });
+  return (
+    <motion.div ref={ref} style={{ x, y }} onMouseMove={(e) => {
+      const r = ref.current?.getBoundingClientRect(); if (!r) return;
+      x.set((e.clientX - (r.left + r.width / 2)) * .12); y.set((e.clientY - (r.top + r.height / 2)) * .12);
+    }} onMouseLeave={() => { x.set(0); y.set(0); }}>
+      <Link to={to} className={className}>{children}</Link>
+    </motion.div>
+  );
+}
+
+function Hero() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const imageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const titleY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const opacity = useTransform(scrollYProgress, [0, .7], [1, 0]);
+  return (
+    <section ref={ref} className="hero-editorial">
+      <motion.img style={{ y: imageY, scale: 1.08 }} src={img("ac-hero-new", 1800, 1200)} alt="ArtCanvas latest collection" className="hero-editorial__image" />
+      <div className="hero-editorial__shade" />
+      <div className="hero-editorial__grid" />
+      <motion.div style={{ opacity }} className="hero-editorial__top"><p>ARTCANVAS / NEW SEASON</p><p>DROP 04 — 2026</p></motion.div>
+      <motion.div style={{ opacity }} className="hero-editorial__side"><span>SCROLL</span><i /><span>01 — 04</span></motion.div>
+      <motion.div style={{ y: titleY }} className="hero-editorial__content">
+        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }} className="eyebrow-light">A STUDY IN EVERYDAY FORM</motion.p>
+        <h1><SplitLine delay={.22}>Wear the</SplitLine><SplitLine delay={.34}><em>unfamiliar.</em></SplitLine></h1>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .5 }} className="hero-editorial__actions">
+          <MagneticLink to="/shop?category=clothing" className="hero-cta">Explore the collection <ArrowUpRight size={15} /></MagneticLink>
+          <span>Designed in small runs.<br />Made to be kept.</span>
+        </motion.div>
+      </motion.div>
+      <div className="hero-editorial__bottom"><span>01</span><div className="hero-categories"><Link to="/shop?category=clothing">Clothing</Link><Link to="/gallery">Art</Link><Link to="/shop?category=objects">Objects</Link><Link to="/shop?category=accessories">Accessories</Link></div><span>EST. 2026</span></div>
+      <motion.div className="hero-scroll-pulse" animate={{ y: [0, 9, 0], opacity: [.35, 1, .35] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} />
+    </section>
+  );
+}
+
+function People() {
+  return (
+    <section className="people-editorial section-shell">
+      <Reveal className="section-heading-line"><div><p className="section-kicker">03 — CLOTHING</p><h2>Choose your<br /><em>silhouette.</em></h2></div><p className="section-note">Three directions.<br />One visual language.</p></Reveal>
+      <Stagger className="people-list" gap={.1}>
+        {PEOPLE.map((person) => <StaggerItem key={person.id} className="person-stagger"><Link to={`/shop?category=clothing&gender=${person.id}`} className="person-row"><span className="person-row__index">{person.index}</span><div className="person-row__name"><h3>{person.name}</h3><p>{person.line}</p></div><div className="person-row__image"><img src={img(person.seed, 520, 640)} alt={person.name} /></div><div className="person-row__subs">{SUBCATEGORIES[person.id].map((sub) => <span key={sub}>{sub}</span>)}</div><motion.span whileHover={{ rotate: 45 }} className="person-row__arrow"><ArrowUpRight size={19} /></motion.span></Link></StaggerItem>)}
+      </Stagger>
+    </section>
+  );
+}
+
+function ProductRail() {
+  return (
+    <section className="edit-editorial section-shell">
+      <Reveal className="section-heading-line">
+        <div>
+          <p className="section-kicker">04 — THE EDIT</p>
+          <h2>Currently<br /><em>interesting.</em></h2>
+        </div>
+        <MagneticLink to="/shop" className="text-link">View all pieces <ArrowRight size={15} /></MagneticLink>
+      </Reveal>
+      <div className="product-rail">
+        {EDIT.map((product, i) => (
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative sm:col-span-2 sm:row-span-2 rounded-3xl overflow-hidden aspect-[4/5] sm:aspect-auto"
+            key={product.id}
+            className={`rail-product rail-product--${i % 3}`}
+            initial={{ opacity: 0, y: 55 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: .15 }}
+            transition={{ duration: .7, delay: (i % 3) * .08, ease: [0.22, 1, 0.36, 1] }}
           >
-            <img src={img("ac-hero-main", 900, 1100)} alt="Studio look" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/10" />
-            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-              <p className="text-white/70 text-xs tracking-[0.25em] uppercase mb-3">New Season · Studio Drop</p>
-              <h1 className="font-display italic text-white text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[0.95] mb-4">
-                Wear the
-                <br />
-                Unexpected
-              </h1>
-              <div className="flex flex-wrap gap-3">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                  <Link to="/shop" className="inline-block px-6 py-3 rounded-full text-xs font-semibold tracking-wider uppercase bg-white text-black">
-                    Shop Now
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
-                  <Link to="/gallery" className="inline-block px-6 py-3 rounded-full text-xs font-semibold tracking-wider uppercase border border-white/50 text-white">
-                    Enter the Gallery
-                  </Link>
-                </motion.div>
+            <Link to={`/product/${product.id}`}>
+              <div className="rail-product__image">
+                <motion.img
+                  whileHover={{ scale: 1.06 }}
+                  transition={{ duration: .7, ease: [0.22, 1, 0.36, 1] }}
+                  src={img(product.seed, 650, 820)}
+                  alt={product.name}
+                />
+                <span>{String(i + 1).padStart(2, "0")}</span>
+                <button aria-label="Add to wishlist" onClick={(e) => e.preventDefault()}><Plus size={16} /></button>
+                <div className="rail-product__reveal">View piece <ArrowUpRight size={13} /></div>
               </div>
-            </div>
-          </motion.div>
-
-          {/* Manifesto tile */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className={`rounded-3xl p-6 flex flex-col justify-between ${dark ? "bg-white/5" : "bg-black text-white"}`}
-          >
-            <p className="font-display italic text-xl sm:text-2xl leading-snug">
-              "We don't make products. We make pieces of identity."
-            </p>
-            <Link to="/about" className="inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase underline underline-offset-4 mt-4">
-              Our story <ArrowUpRight size={12} />
+              <div className="rail-product__meta">
+                <span>{product.subcategory || "Object"}</span>
+                <span>${product.price}</span>
+              </div>
+              <h3>{product.name}</h3>
             </Link>
           </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-          {/* Drop stat tile */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
-            className={`relative rounded-3xl overflow-hidden ${dark ? "bg-white/5" : "bg-[#EDE0CC]"}`}
-          >
-            <img src={img("ac-hero-drop", 500, 400)} alt="Drop 001" className="w-full h-full object-cover opacity-90" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-4 left-4 text-white">
-              <p className="font-semibold text-sm">Drop 001</p>
-              <p className="opacity-80 text-xs">Only 12 remaining</p>
-            </div>
-          </motion.div>
+function WearingStory() {
+  const sectionRef = useRef(null);
+  const [active, setActive] = React.useState(0);
+  const story = [
+    { id: 'women', number: '01', title: 'Women', serif: 'The art of wearing.', line: 'Fluid lines / considered layers', seed: 'ac-wearing-women', sub: 'Dresses · Outerwear · Tops', link: '/shop?category=clothing&gender=women' },
+    { id: 'men', number: '02', title: 'Men', serif: 'The art of wearing.', line: 'Quiet tailoring / everyday form', seed: 'ac-wearing-men', sub: 'Shirts · Outerwear · Trousers', link: '/shop?category=clothing&gender=men' },
+    { id: 'kids', number: '03', title: 'Children', serif: 'The art of wearing.', line: 'Playful proportions / easy movement', seed: 'ac-wearing-kids', sub: 'Tees · Outerwear · Sets', link: '/shop?category=clothing&gender=kids' },
+  ];
+
+  React.useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    let ticking = false;
+    const update = () => {
+      const rect = section.getBoundingClientRect();
+      const scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
+      setActive(Math.min(story.length - 1, Math.floor(progress * story.length)));
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  const current = story[active];
+  return (
+    <section ref={sectionRef} className="wearing-editorial section-shell">
+      <div className="wearing-editorial__sticky">
+        <div className="wearing-editorial__intro">
+          <span className="intro-editorial__number">02</span>
+          <div>
+            <p className="section-kicker">THE ART OF WEARING</p>
+            <h2>Not a trend.<br /><em>A point of view.</em></h2>
+            <p className="wearing-editorial__body">ArtCanvas brings clothing, objects and visual culture into one considered space — less catalogue, more curation.</p>
+          </div>
         </div>
-      </section>
-
-      {/* Studio Spotlight — scroll-triggered reveal */}
-      <FeatureSpotlight products={PRODUCTS.slice(2, 6)} />
-
-      {/* Trust bar */}
-      <section className={`px-6 py-6 ${dark ? "bg-white/5" : "bg-black text-white"}`}>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
-          {[
-            [Truck, "Fast Delivery", "Quick & safe shipping"],
-            [PackageCheck, "Easy Returns", "Within 15 days"],
-            [ShieldCheck, "Quality Assured", "Studio-checked pieces"],
-            [Lock, "Secure Payment", "100% secure checkout"],
-          ].map(([Icon, t, s], i) => (
-            <Reveal key={i} delay={i * 0.06} className="flex items-center gap-3">
-              <Icon size={20} className="shrink-0 opacity-80" />
-              <div>
-                <p className="font-semibold">{t}</p>
-                <p className="opacity-60">{s}</p>
-              </div>
-            </Reveal>
+        <div className="wearing-editorial__visual">
+          {story.map((item, index) => (
+            <motion.div key={item.id} className="wearing-frame" initial={false} animate={{ opacity: active === index ? 1 : 0, scale: active === index ? 1 : .975, x: active === index ? 0 : 24 }} transition={{ duration: .7, ease: [0.16, 1, 0.3, 1] }}>
+              <img src={img(item.seed, 1050, 1250)} alt={`${item.title} clothing editorial`} />
+              <div className="wearing-frame__veil" />
+              <div className="wearing-frame__top"><span>{item.number} / 03</span><span>ARTCANVAS</span></div>
+              <div className="wearing-frame__caption"><span>{item.line}</span><strong>{item.title}</strong></div>
+            </motion.div>
           ))}
         </div>
-      </section>
-
-      {/* Categories — bento tiles, mixed sizes */}
-      <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <Reveal>
-            <h2 className="font-display italic text-3xl sm:text-4xl font-black tracking-tight mb-6">Shop by Category</h2>
-          </Reveal>
-          <Stagger className="grid grid-cols-2 sm:grid-cols-4 sm:auto-rows-[130px] gap-4">
-            {CATEGORIES.map((c) => (
-              <StaggerItem key={c.id} className={CAT_TILES[c.id] || "aspect-square"}>
-                <Link to={c.id === "art" ? "/gallery" : `/shop?category=${c.id}`} className="relative group block w-full h-full rounded-3xl overflow-hidden">
-                  <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.6 }} src={img(c.seed, 500, 500)} alt={c.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 text-white">
-                    <p className="font-display italic text-lg sm:text-xl font-bold">{c.name}</p>
-                    <p className="text-[11px] opacity-70 mb-1 hidden sm:block">{c.desc}</p>
-                    <span className="text-[10px] font-semibold underline underline-offset-4 inline-flex items-center gap-1">
-                      Shop {c.name} <ArrowRight size={10} className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                    </span>
-                  </div>
-                </Link>
-              </StaggerItem>
-            ))}
-          </Stagger>
+        <div className="wearing-editorial__info">
+          <AnimatePresence mode="wait">
+            <motion.div key={current.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: .45 }}>
+              <p className="section-kicker">{current.number} — {current.title}</p>
+              <h3>{current.serif}</h3>
+              <p>{current.sub}</p>
+              <Link to={current.link}>Explore {current.title} <ArrowUpRight size={14} /></Link>
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </section>
-
-      {/* Featured products — bento grid */}
-      <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between mb-8">
-            <Reveal>
-              <h2 className="font-display italic text-4xl font-black tracking-tight">Featured</h2>
-            </Reveal>
-            <Link to="/shop" className="text-xs font-semibold tracking-wide uppercase underline underline-offset-4 hidden sm:inline">
-              View all
-            </Link>
-          </div>
-          <BentoGrid products={featured} />
+        <div className="wearing-editorial__progress" aria-hidden="true">
+          {story.map((item, index) => <span key={item.id} className={active === index ? 'is-active' : ''}><i />{item.number}</span>)}
         </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="px-6 py-16">
-        <div className="max-w-6xl mx-auto text-center">
-          <Reveal>
-            <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-2">Social Proof</p>
-            <h2 className="font-display italic text-3xl sm:text-4xl font-black tracking-tight mb-10">What Our Customers Say</h2>
-          </Reveal>
-          <Stagger className="grid sm:grid-cols-3 gap-6 text-left">
-            {TESTIMONIALS.map(([quote, name, role], i) => (
-              <StaggerItem key={i}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className={`p-6 rounded-3xl border h-full ${dark ? "border-white/10 bg-white/5" : "border-black/10 bg-white"}`}
-                >
-                  <div className="flex gap-1 mb-3">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <Star key={j} size={14} className="fill-amber-500 text-amber-500" />
-                    ))}
-                  </div>
-                  <p className="text-sm italic opacity-80 mb-4">"{quote}"</p>
-                  <p className="text-sm font-semibold">{name}</p>
-                  <p className="text-xs opacity-50">{role}</p>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </div>
-      </section>
-
-      {/* Manifesto CTA */}
-      <section className="px-6 py-20 text-center border-t border-current/10">
-        <Reveal>
-          <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-4">Our Philosophy</p>
-          <h2 className="font-display italic text-3xl sm:text-4xl font-black tracking-tight max-w-2xl mx-auto leading-snug">
-            We don't make products. We make pieces of identity.
-          </h2>
-          <Link to="/about" className="inline-block mt-6 text-xs font-semibold tracking-wide uppercase underline underline-offset-4">
-            Read our story
-          </Link>
-        </Reveal>
-      </section>
-    </PageTransition>
+      </div>
+      <div className="wearing-editorial__steps" aria-hidden="true">
+        {story.map((item, index) => (
+          <article key={item.id} className={`wearing-step ${active === index ? 'is-active' : ''}`}>
+            <span>{item.number}</span><div><p>{item.title}</p><small>{item.line}</small></div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
+}
+export default function Home() {
+  return <PageTransition><main className="home-page"><Hero /><WearingStory /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

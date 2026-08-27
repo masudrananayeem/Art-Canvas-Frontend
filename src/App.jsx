@@ -14,6 +14,7 @@ import Gallery from "./pages/Gallery";
 import About from "./pages/About";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
+import Account from "./pages/Account";
 
 export default function App() {
   const { dark } = useStore();
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/about" element={<About />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/account" element={<Account />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AnimatePresence>

@@ -6,9 +6,11 @@ import { useStore } from "../context/StoreContext";
 
 const LINKS = [
   { to: "/", label: "Home" },
+  { to: "/shop?category=clothing", label: "Clothing" },
   { to: "/shop", label: "Shop" },
   { to: "/gallery", label: "Gallery" },
   { to: "/about", label: "About" },
+  { to: "/account", label: "Sign in / Sign up" },
 ];
 
 export default function MobileMenu({ open, onClose }) {
