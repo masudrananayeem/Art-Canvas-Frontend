@@ -64,10 +64,22 @@ function Hero() {
 function People() {
   return (
     <section className="people-editorial section-shell">
-      <Reveal className="section-heading-line"><div><p className="section-kicker">03 — CLOTHING</p><h2>Choose your<br /><em>silhouette.</em></h2></div><p className="section-note">Three directions.<br />One visual language.</p></Reveal>
-      <Stagger className="people-list" gap={.1}>
-        {PEOPLE.map((person) => <StaggerItem key={person.id} className="person-stagger"><Link to={`/shop?category=clothing&gender=${person.id}`} className="person-row"><span className="person-row__index">{person.index}</span><div className="person-row__name"><h3>{person.name}</h3><p>{person.line}</p></div><div className="person-row__image"><img src={img(person.seed, 520, 640)} alt={person.name} /></div><div className="person-row__subs">{SUBCATEGORIES[person.id].map((sub) => <span key={sub}>{sub}</span>)}</div><motion.span whileHover={{ rotate: 45 }} className="person-row__arrow"><ArrowUpRight size={19} /></motion.span></Link></StaggerItem>)}
-      </Stagger>
+      <Reveal className="section-heading-line">
+        <div><p className="section-kicker">03 — CLOTHING / THE WARDROBE</p><h2>Three ways to<br /><em>wear the idea.</em></h2></div>
+        <p className="section-note">Women / Men / Children<br />A considered wardrobe, not a catalogue.</p>
+      </Reveal>
+      <div className="clothing-index">
+        {PEOPLE.map((person, index) => (
+          <motion.div key={person.id} className={`clothing-index__item clothing-index__item--${index + 1}`} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .75, delay: index * .08, ease: [0.16, 1, 0.3, 1] }}>
+            <Link to={`/shop?category=clothing&gender=${person.id}`} className="clothing-index__link">
+              <div className="clothing-index__meta"><span>{person.index}</span><span>ARTCANVAS / {person.id.toUpperCase()}</span></div>
+              <div className="clothing-index__visual"><img src={img(person.seed, 760, 940)} alt={`${person.name} clothing`} /><div className="clothing-index__veil" /></div>
+              <div className="clothing-index__content"><p>{person.line}</p><h3>{person.name}</h3><div className="clothing-index__subs">{SUBCATEGORIES[person.id].map((sub) => <span key={sub}>{sub}</span>)}</div></div>
+              <span className="clothing-index__arrow"><ArrowUpRight size={20} /></span>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
     </section>
   );
 }

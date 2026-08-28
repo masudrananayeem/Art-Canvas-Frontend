@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, { createContext, useContext, useState, useMemo, useEffect } from "react";
 
 const StoreContext = createContext(null);
 
@@ -7,6 +7,13 @@ export function StoreProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState(new Set());
   const [cartOpen, setCartOpen] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    document.body.style.background = dark ? "#0d0d0c" : "#f4f1eb";
+    document.body.style.color = dark ? "#EDE7D9" : "#141413";
+    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+  }, [dark]);
 
   const addToBag = (product, qty = 1) => {
     setCart((c) => {

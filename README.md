@@ -28,3 +28,11 @@ npm run build
 - Gallery, About, Account, Wishlist, Shop and product detail routes
 - Cart drawer and theme toggle
 - Reduced-motion accessibility support
+
+
+## ArtCanvas V8 — Master refresh
+- Refined light/night mood with a warm dark palette and document-level color-scheme sync.
+- Precision-centered navigation with balanced left/right spacing.
+- Home Clothing chapter redesigned as an editorial three-image wardrobe index.
+- Shop expanded with All Pieces, New In, Clothing, Art, Objects, Accessories and Gifts category browsing.
+- Category tiles use editorial imagery and preserve existing filters, sorting and clothing sub-categories.

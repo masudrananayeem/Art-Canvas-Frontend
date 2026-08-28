@@ -22,7 +22,7 @@ export default function App() {
   const location = useLocation();
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-500 ${dark ? "bg-[#111110] text-[#EDE7D9]" : "bg-[#FAF7F1] text-[#111110]"}`}>
+    <div className={`app-shell min-h-screen font-sans transition-colors duration-500 ${dark ? "theme-dark bg-[#111110] text-[#EDE7D9]" : "theme-light bg-[#FAF7F1] text-[#111110]"}`}>
       <ScrollProgress />
       <Navbar onMenu={() => setMenuOpen(true)} />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />

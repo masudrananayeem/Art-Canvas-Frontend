@@ -1,18 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Shirt, Sparkles, Gift, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
+import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
 import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
-// Art has its own dedicated Gallery experience — Shop stays focused on wearables & objects.
-const SHOP_CATEGORIES = CATEGORIES.filter((c) => c.id !== "art");
-const SHOP_PRODUCTS = PRODUCTS.filter((p) => p.category !== "art");
-const ART_TILE = CATEGORIES.find((c) => c.id === "art");
+const SHOP_CATEGORIES = CATEGORIES;
+const SHOP_PRODUCTS = PRODUCTS;
 
-const ICONS = { clothing: Shirt, objects: Package, accessories: Gift, gifts: Gift };
+const ICONS = { clothing: Shirt, art: Palette, objects: Package, accessories: Gift, gifts: Gift };
 const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Top Rated"];
 const MAX_PRICE = Math.max(...SHOP_PRODUCTS.map((p) => p.price));
 
@@ -32,6 +30,7 @@ export default function Shop() {
     if (id === "all") next.delete("category");
     else next.set("category", id);
     next.delete("sub");
+    if (id !== "clothing") next.delete("gender");
     setParams(next);
   };
   const setGender = (id) => {
@@ -51,7 +50,7 @@ export default function Shop() {
   const availableSubs = gender !== "all" ? SUBCATEGORIES[gender] || [] : [];
 
   const filtered = useMemo(() => {
-    let list = active === "all" ? SHOP_PRODUCTS : SHOP_PRODUCTS.filter((p) => p.category === active);
+    let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => b.id - a.id).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
     if (gender !== "all") list = list.filter((p) => p.gender === gender || p.gender === "unisex");
     if (sub !== "all") list = list.filter((p) => p.subcategory === sub);
     list = list.filter((p) => p.price <= maxPrice);
@@ -167,19 +166,9 @@ export default function Shop() {
 
       <div className={`h-px ${dark ? "bg-white/10" : "bg-black/10"}`} />
 
-      {/* Art callout — points to the dedicated Gallery, kept separate from wearables */}
-      <Link
-        to="/gallery"
-        className={`group block rounded-2xl overflow-hidden relative aspect-[4/3] ${dark ? "bg-white/5" : "bg-black"}`}
-      >
-        <img src={img(ART_TILE.seed, 400, 300)} alt="Art" className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-          <p className="text-xs tracking-[0.2em] uppercase opacity-80 mb-1">Looking for Art?</p>
-          <span className="text-sm font-semibold flex items-center gap-1">
-            Visit the Gallery <ArrowUpRight size={13} />
-          </span>
-        </div>
+      <Link to="/gallery" className={`group block border p-4 rounded-2xl transition ${dark ? "border-white/10 bg-white/[.03]" : "border-black/10 bg-white"}`}>
+        <p className="text-[9px] tracking-[.2em] uppercase opacity-45 mb-2">Also in the studio</p>
+        <div className="flex items-end justify-between gap-4"><span className="font-display italic text-2xl">Original art & editions</span><ArrowUpRight size={16} className="shrink-0 opacity-60 group-hover:translate-x-1 group-hover:-translate-y-1 transition" /></div>
       </Link>
 
       <div className="text-xs opacity-60 leading-relaxed">
@@ -195,6 +184,17 @@ export default function Shop() {
           <p className="text-[9px] tracking-[0.25em] uppercase opacity-50 mb-2">04 — The collection</p>
           <h1 className="font-display italic text-4xl sm:text-6xl font-black tracking-[-.04em]">The Collection</h1>
           <p className="max-w-2xl mt-4 text-sm opacity-55 leading-relaxed">Clothing is organized into <b>Women, Men and Children</b>, with dedicated sub-categories. Pick a person, then narrow the silhouette.</p>
+        </div>
+      </section>
+
+      <section className="shop-category-strip px-6 pb-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-end justify-between gap-5 mb-4"><div><p className="text-[9px] tracking-[.25em] uppercase opacity-45">Browse the world</p><h2 className="font-display italic text-2xl sm:text-3xl font-bold mt-1">Shop by category</h2></div><span className="hidden sm:block text-[10px] opacity-45">{SHOP_PRODUCTS.length} pieces / {SHOP_CATEGORIES.length} categories</span></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <button onClick={() => setActive("all")} className={`shop-category-tile ${active === "all" ? "is-active" : ""}`}><span className="shop-category-tile__number">00</span><span>All pieces</span></button>
+            <button onClick={() => setActive("new")} className={`shop-category-tile ${active === "new" ? "is-active" : ""}`}><img src={img("ac-new-in", 260, 180)} alt="New in" /><span>New in</span></button>
+            {SHOP_CATEGORIES.map((c) => <button key={c.id} onClick={() => setActive(c.id)} className={`shop-category-tile ${active === c.id ? "is-active" : ""}`}><img src={img(c.seed, 260, 180)} alt="" /><span>{c.name}</span></button>)}
+          </div>
         </div>
       </section>
 
