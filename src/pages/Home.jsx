@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
-import { ArrowUpRight, ArrowRight, Plus } from "lucide-react";
+import { ArrowUpRight, ArrowRight, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import Reveal, { Stagger, StaggerItem } from "../components/Reveal";
 import { PRODUCTS, SUBCATEGORIES, img } from "../data/products";
@@ -62,23 +62,54 @@ function Hero() {
 }
 
 function People() {
+  const railRef = useRef(null);
+  const newest = PRODUCTS.slice(0, 10);
+
+  const move = (direction) => {
+    railRef.current?.scrollBy({ left: direction * Math.min(520, railRef.current.clientWidth * .72), behavior: "smooth" });
+  };
+
   return (
-    <section className="people-editorial section-shell">
-      <Reveal className="section-heading-line">
-        <div><p className="section-kicker">03 — CLOTHING / THE WARDROBE</p><h2>Three ways to<br /><em>wear the idea.</em></h2></div>
-        <p className="section-note">Women / Men / Children<br />A considered wardrobe, not a catalogue.</p>
+    <section className="whats-new section-shell">
+      <Reveal className="section-heading-line whats-new__heading">
+        <div>
+          <p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p>
+          <h2>What’s<br /><em>new.</em></h2>
+        </div>
+        <div className="whats-new__intro">
+          <p className="section-note">Fresh pieces, new proportions<br />and objects worth noticing.</p>
+          <Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link>
+        </div>
       </Reveal>
-      <div className="clothing-index">
-        {PEOPLE.map((person, index) => (
-          <motion.div key={person.id} className={`clothing-index__item clothing-index__item--${index + 1}`} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .18 }} transition={{ duration: .75, delay: index * .08, ease: [0.16, 1, 0.3, 1] }}>
-            <Link to={`/shop?category=clothing&gender=${person.id}`} className="clothing-index__link">
-              <div className="clothing-index__meta"><span>{person.index}</span><span>ARTCANVAS / {person.id.toUpperCase()}</span></div>
-              <div className="clothing-index__visual"><img src={img(person.seed, 760, 940)} alt={`${person.name} clothing`} /><div className="clothing-index__veil" /></div>
-              <div className="clothing-index__content"><p>{person.line}</p><h3>{person.name}</h3><div className="clothing-index__subs">{SUBCATEGORIES[person.id].map((sub) => <span key={sub}>{sub}</span>)}</div></div>
-              <span className="clothing-index__arrow"><ArrowUpRight size={20} /></span>
-            </Link>
-          </motion.div>
-        ))}
+
+      <div className="whats-new__rail-wrap">
+        <div className="whats-new__controls" aria-label="What's new carousel controls">
+          <button type="button" onClick={() => move(-1)} aria-label="Previous pieces"><ChevronLeft size={20} /></button>
+          <button type="button" onClick={() => move(1)} aria-label="Next pieces"><ChevronRight size={20} /></button>
+        </div>
+        <div ref={railRef} className="whats-new__rail no-scrollbar">
+          {newest.map((product, index) => (
+            <motion.article
+              key={product.id}
+              className={`new-piece new-piece--${index % 4}`}
+              initial={{ opacity: 0, y: 35 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: .18 }}
+              transition={{ duration: .7, delay: Math.min(index, 5) * .05, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Link to={`/product/${product.id}`} className="new-piece__link">
+                <div className="new-piece__image">
+                  <img src={img(product.seed, 760, 900)} alt={product.name} />
+                  <span className="new-piece__index">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="new-piece__tag">NEW</span>
+                  <span className="new-piece__view">View piece <ArrowUpRight size={13} /></span>
+                </div>
+                <div className="new-piece__meta"><span>{product.subcategory || product.category}</span><span>${product.price}</span></div>
+                <h3>{product.name}</h3>
+              </Link>
+            </motion.article>
+          ))}
+        </div>
       </div>
     </section>
   );

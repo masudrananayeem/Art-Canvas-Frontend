@@ -1,39 +1,35 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ArrowUpRight, Instagram, Mail, ArrowRight } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 
 export default function Footer() {
   const { dark } = useStore();
   return (
-    <footer className={`px-6 pt-16 pb-8 ${dark ? "bg-white/5" : "bg-black text-white"}`}>
-      <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-10 mb-12">
-        <div>
-          <p className="font-display italic text-xl font-black tracking-tight mb-3">ArtCanvas</p>
-          <p className="text-sm opacity-60 max-w-xs">ArtCanvas is a premium studio platform blending fashion, art and design into one collection.</p>
+    <footer className={`site-footer ${dark ? "site-footer--dark" : ""}`}>
+      <div className="site-footer__top">
+        <div className="site-footer__brand-block">
+          <Link to="/" className="site-footer__brand" aria-label="ArtCanvas home"><span>Art</span><b>Canvas</b></Link>
+          <p>Clothing, objects and visual culture — carefully selected, quietly made.</p>
+          <Link to="/shop" className="site-footer__arrow-link">Explore the collection <ArrowUpRight size={15} /></Link>
         </div>
-        <div>
-          <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Quick Links</p>
-          <ul className="space-y-2 text-sm opacity-80">
-            <li><Link to="/" className="hover:underline">Home</Link></li>
-            <li><Link to="/shop" className="hover:underline">Shop</Link></li>
-            <li><Link to="/about" className="hover:underline">About Us</Link></li>
-            <li><Link to="/wishlist" className="hover:underline">Wishlist</Link></li>
-          </ul>
-        </div>
-        <div>
-          <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Connect</p>
-          <ul className="space-y-2 text-sm opacity-80">
-            <li>Instagram</li>
-            <li>Pinterest</li>
-            <li>Behance</li>
-            <li>Email</li>
-          </ul>
+        <div className="site-footer__newsletter">
+          <p className="site-footer__kicker">STAY IN THE LOOP</p>
+          <h2>Notes from<br /><em>the studio.</em></h2>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <input aria-label="Email address" type="email" placeholder="Your email address" />
+            <button aria-label="Subscribe" type="submit"><ArrowRight size={17} /></button>
+          </form>
+          <small>No noise. Just new work, studio notes and occasional releases.</small>
         </div>
       </div>
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between text-xs opacity-50 border-t border-white/10 pt-6">
-        <span>© 2026 ArtCanvas Studio</span>
-        <span>Wearable art meets contemporary design.</span>
+      <div className="site-footer__grid">
+        <div><p className="site-footer__kicker">NAVIGATE</p><Link to="/">Home</Link><Link to="/shop">Shop</Link><Link to="/gallery">Gallery</Link><Link to="/about">About</Link></div>
+        <div><p className="site-footer__kicker">COLLECTIONS</p><Link to="/shop?category=clothing&gender=women">Women</Link><Link to="/shop?category=clothing&gender=men">Men</Link><Link to="/shop?category=clothing&gender=kids">Children</Link><Link to="/shop?category=art">Art & Objects</Link></div>
+        <div><p className="site-footer__kicker">FOLLOW</p><a href="https://instagram.com" target="_blank" rel="noreferrer"><Instagram size={14} /> Instagram</a><a href="mailto:studio@artcanvas.local"><Mail size={14} /> studio@artcanvas.local</a></div>
+        <div><p className="site-footer__kicker">SERVICE</p><Link to="/account">Account</Link><Link to="/wishlist">Wishlist</Link><Link to="/shop">Shipping & returns</Link><Link to="/about">Contact studio</Link></div>
       </div>
+      <div className="site-footer__bottom"><span>© 2026 ArtCanvas Studio</span><span>Made with intention / kept for longer</span><span>Dhaka — Worldwide</span></div>
     </footer>
   );
 }
