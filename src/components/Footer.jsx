@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Instagram, Mail, ArrowRight } from "lucide-react";
+import { ArrowUpRight, Mail, ArrowRight } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 export default function Footer(){ const {dark}=useStore(); return <footer className={`site-footer site-footer--editorial ${dark?"site-footer--dark":""}`}>
   <div className="footer-flag"><span>ARTCANVAS / 2026</span><span>INDEPENDENT EDITORIAL STORE</span></div>
@@ -12,7 +12,7 @@ export default function Footer(){ const {dark}=useStore(); return <footer classN
     <div><p className="site-footer__kicker">EXPLORE</p><Link to="/">Home</Link><Link to="/shop">Shop all</Link><Link to="/gallery">Gallery</Link><Link to="/about">The studio</Link></div>
     <div><p className="site-footer__kicker">CLOTHING</p><Link to="/shop?category=clothing&gender=women">Women</Link><Link to="/shop?category=clothing&gender=men">Men</Link><Link to="/shop?category=clothing&gender=kids">Children</Link><Link to="/shop?category=accessories">Accessories</Link></div>
     <div><p className="site-footer__kicker">SERVICE</p><Link to="/account">Account</Link><Link to="/wishlist">Wishlist</Link><Link to="/shop">Shipping & returns</Link><Link to="/about">Contact studio</Link></div>
-    <div><p className="site-footer__kicker">FOLLOW</p><a href="https://instagram.com" target="_blank" rel="noreferrer"><Instagram size={14}/> Instagram</a><a href="mailto:studio@artcanvas.local"><Mail size={14}/> studio@artcanvas.local</a><span className="footer-place">DHAKA — WORLDWIDE</span></div>
+    <div><p className="site-footer__kicker">FOLLOW</p><a href="https://instagram.com" target="_blank" rel="noreferrer"><span aria-hidden="true" style={{fontSize:14,fontWeight:700,lineHeight:1}}>@</span> Instagram</a><a href="mailto:studio@artcanvas.local"><Mail size={14}/> studio@artcanvas.local</a><span className="footer-place">DHAKA — WORLDWIDE</span></div>
   </div>
   <div className="footer-bottom"><span>© 2026 ARTCANVAS</span><span>CONSIDERED / INDEPENDENT / KEPT</span><span>PRIVACY · TERMS</span></div>
 </footer>}

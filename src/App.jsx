@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 import Account from "./pages/Account";
+import ChatWidget from "./components/ChatWidget";
 
 export default function App() {
   const { dark } = useStore();
@@ -41,6 +42,7 @@ export default function App() {
       </AnimatePresence>
 
       <Footer />
+      <ChatWidget />
       <CartDrawer />
     </div>
   );

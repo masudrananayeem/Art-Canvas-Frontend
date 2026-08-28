@@ -1,22 +1,32 @@
-# ArtCanvas V9 — Editorial Navigation + What's New + Footer
+# ArtCanvas V11 — Full Updated Edition
 
-This version is based on V8 and keeps the existing editorial home, motion, dark mode, account, shop and clothing flows.
-
-## Updates
-- Full-bleed responsive navbar with larger type and balanced center brand.
-- Mobile-first navigation behavior with compact actions.
-- Home section 03 converted into a horizontal “What’s New” editorial carousel with 10 pieces and previous/next controls.
-- Mixed card proportions preserve the editorial rhythm without making the page overly card-heavy.
-- Refined footer with ArtCanvas brand, studio newsletter, navigation, collections and service links.
-- Dark mode styling for the new carousel controls and footer.
+This is the complete V11 build: V10 editorial/shop/carousel/footer/night-mode foundation plus V11 account authentication UI and studio chat.
 
 ## Run
+
 ```bash
 npm install
 npm run dev
 ```
 
-## Production check
+Open the local URL printed by Vite (normally http://localhost:5173/).
+
+## Included
+- Full-width responsive editorial navbar
+- Light / night mood theme
+- Home editorial sections and Art of Wearing scroll story
+- What's New horizontal carousel
+- Updated editorial footer
+- Shop categories and filtering
+- Clothing: Women / Men / Children + subcategories
+- Sign in / Sign up
+- Continue with Google demo action
+- Password visibility toggle
+- Signed-in member state
+- Floating Studio Chat; chat is frontend/demo and can later be connected to a backend
+
+## Build
+
 ```bash
 npm run build
 ```
