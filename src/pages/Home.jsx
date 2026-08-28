@@ -62,55 +62,21 @@ function Hero() {
 }
 
 function People() {
-  const railRef = useRef(null);
   const newest = PRODUCTS.slice(0, 10);
-
-  const move = (direction) => {
-    railRef.current?.scrollBy({ left: direction * Math.min(520, railRef.current.clientWidth * .72), behavior: "smooth" });
-  };
-
+  const [active, setActive] = React.useState(0);
+  const maxIndex = Math.max(0, newest.length - 4);
+  const move = (direction) => setActive((v) => Math.max(0, Math.min(maxIndex, v + direction)));
   return (
     <section className="whats-new section-shell">
-      <Reveal className="section-heading-line whats-new__heading">
-        <div>
-          <p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p>
-          <h2>What’s<br /><em>new.</em></h2>
-        </div>
-        <div className="whats-new__intro">
-          <p className="section-note">Fresh pieces, new proportions<br />and objects worth noticing.</p>
-          <Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link>
-        </div>
-      </Reveal>
-
-      <div className="whats-new__rail-wrap">
-        <div className="whats-new__controls" aria-label="What's new carousel controls">
-          <button type="button" onClick={() => move(-1)} aria-label="Previous pieces"><ChevronLeft size={20} /></button>
-          <button type="button" onClick={() => move(1)} aria-label="Next pieces"><ChevronRight size={20} /></button>
-        </div>
-        <div ref={railRef} className="whats-new__rail no-scrollbar">
-          {newest.map((product, index) => (
-            <motion.article
-              key={product.id}
-              className={`new-piece new-piece--${index % 4}`}
-              initial={{ opacity: 0, y: 35 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: .18 }}
-              transition={{ duration: .7, delay: Math.min(index, 5) * .05, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <Link to={`/product/${product.id}`} className="new-piece__link">
-                <div className="new-piece__image">
-                  <img src={img(product.seed, 760, 900)} alt={product.name} />
-                  <span className="new-piece__index">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="new-piece__tag">NEW</span>
-                  <span className="new-piece__view">View piece <ArrowUpRight size={13} /></span>
-                </div>
-                <div className="new-piece__meta"><span>{product.subcategory || product.category}</span><span>${product.price}</span></div>
-                <h3>{product.name}</h3>
-              </Link>
-            </motion.article>
-          ))}
-        </div>
+      <Reveal className="section-heading-line whats-new__heading"><div><p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p><h2>What’s<br /><em>new.</em></h2></div><div className="whats-new__intro"><p className="section-note">Fresh pieces, new proportions<br />and objects worth noticing.</p><Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link></div></Reveal>
+      <div className="whats-new__carousel">
+        <button className="whats-new__arrow" type="button" onClick={() => move(-1)} disabled={!active} aria-label="Previous pieces"><ChevronLeft size={22}/><span>PREV</span></button>
+        <div className="whats-new__viewport"><motion.div className="whats-new__track" animate={{ x: `calc(-${active} * (var(--new-card-width) + var(--new-gap)))` }} transition={{type:'spring',stiffness:260,damping:30}}>
+          {newest.map((product,index)=><article key={product.id} className={`new-piece new-piece--${index%4}`}><Link to={`/product/${product.id}`} className="new-piece__link"><div className="new-piece__image"><img src={img(product.seed,760,900)} alt={product.name}/><span className="new-piece__index">{String(index+1).padStart(2,'0')}</span><span className="new-piece__tag">NEW</span><span className="new-piece__view">View piece <ArrowUpRight size={13}/></span></div><div className="new-piece__meta"><span>{product.subcategory||product.category}</span><span>${product.price}</span></div><h3>{product.name}</h3></Link></article>)}
+        </motion.div></div>
+        <button className="whats-new__arrow" type="button" onClick={() => move(1)} disabled={active===maxIndex} aria-label="Next pieces"><span>NEXT</span><ChevronRight size={22}/></button>
       </div>
+      <div className="whats-new__pager"><span>{String(active+1).padStart(2,'0')}</span><div><i style={{width:`${((active+1)/(maxIndex+1))*100}%`}}/></div><span>{String(maxIndex+1).padStart(2,'0')}</span></div>
     </section>
   );
 }
