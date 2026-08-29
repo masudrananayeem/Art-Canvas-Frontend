@@ -517,3 +517,42 @@ html[data-theme="dark"] .site-footer--editorial{background:#070706}html[data-the
 @media(max-width:820px){.account-page{padding:45px 18px 90px}.account-wrap{grid-template-columns:1fr;gap:36px}.account-intro h1{font-size:58px}.account-panel{padding:22px}.chat-launch{right:14px;bottom:14px}.chat-panel{right:14px;bottom:70px;height:500px}}
 @media(max-width:560px){.account-intro h1{font-size:48px}.brand-lockup span,.brand-lockup b{font-size:21px!important}.chat-launch{width:50px;height:50px}.chat-launch span{display:none}}
 
+
+/* V12 — typography, authentic clothing imagery, and fashion film */
+body, button, input, textarea, select { font-family:'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.hero-editorial h1,.section-heading-line h2,.wearing-editorial__intro h2,.manifesto-editorial h2,.fashion-film h2,.account-intro h1,.account-welcome h2 { font-family:'Manrope',system-ui,sans-serif; font-weight:600; }
+.hero-editorial h1 em,.section-heading-line h2 em,.wearing-editorial__intro h2 em,.manifesto-editorial h2 em,.fashion-film h2 em,.account-intro h1 em { font-family:'Manrope',system-ui,sans-serif; font-style:normal; font-weight:400; letter-spacing:-.075em; }
+.nav-link { font-size:12px; letter-spacing:.13em; }
+.nav-primary,.nav-secondary { gap:10px; }
+.nav-right { gap:22px; }
+.brand-lockup span,.brand-lockup b { font-family:'Manrope',sans-serif !important; font-style:normal !important; font-weight:800 !important; letter-spacing:-.09em !important; }
+.brand-lockup span { font-size:26px !important; }
+.brand-lockup b { font-size:26px !important; }
+.site-footer__brand { align-items:center; gap:15px; }
+.site-footer__logo { width:74px; height:74px; object-fit:contain; display:block; border-radius:50%; flex:0 0 auto; }
+.site-footer__brand span { font:800 clamp(38px,4.7vw,68px)/1 'Manrope',sans-serif !important; font-style:normal !important; letter-spacing:-.09em !important; }
+.site-footer__brand b { display:none; }
+.fashion-film { padding:150px 0 170px; }
+.fashion-film__head { display:flex; align-items:flex-end; justify-content:space-between; gap:40px; margin-bottom:38px; }
+.fashion-film__head h2 { margin:10px 0 0; font:600 clamp(54px,6.7vw,96px)/.84 'Manrope',sans-serif; letter-spacing:-.075em; }
+.fashion-film__head h2 em { font-style:normal; font-weight:400; }
+.fashion-film__head .section-note { max-width:250px; margin:0 0 4px; text-align:right; font-size:12px; line-height:1.7; opacity:.5; }
+.fashion-film__frame { position:relative; width:100%; aspect-ratio:16/8.8; overflow:hidden; background:#161615; box-shadow:0 28px 90px rgba(20,20,19,.13); }
+.fashion-film__video { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(.8) contrast(1.04); }
+.fashion-film__frame::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,rgba(0,0,0,.22),transparent 38%,rgba(0,0,0,.4)); }
+.fashion-film__overlay { position:absolute; z-index:2; top:18px; left:20px; right:20px; display:flex; justify-content:space-between; color:#fff; font:700 8px/1 'Manrope',sans-serif; letter-spacing:.18em; }
+.fashion-film__center { position:absolute; z-index:3; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:9px; color:#fff; font:700 8px/1 'Manrope',sans-serif; letter-spacing:.2em; opacity:.85; }
+.fashion-film__center i { width:28px; height:1px; background:#fff; display:block; }
+html[data-theme="dark"] .fashion-film__frame { box-shadow:0 28px 90px rgba(0,0,0,.42); }
+@media (max-width:780px){
+  .nav-link { font-size:10px; }
+  .brand-lockup span { font-size:22px !important; }
+  .brand-lockup b { font-size:22px !important; }
+  .fashion-film { padding:100px 0 115px; }
+  .fashion-film__head { display:block; margin-bottom:24px; }
+  .fashion-film__head h2 { font-size:54px; }
+  .fashion-film__head .section-note { text-align:left; margin-top:20px; }
+  .fashion-film__frame { aspect-ratio:4/5; }
+  .fashion-film__overlay { flex-direction:column; gap:7px; }
+  .site-footer__logo { width:60px; height:60px; }
+}

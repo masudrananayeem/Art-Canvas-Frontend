@@ -81,6 +81,27 @@ function People() {
   );
 }
 
+function FashionFilm() {
+  return (
+    <section className="fashion-film section-shell">
+      <div className="fashion-film__head">
+        <div>
+          <p className="section-kicker">FILM / 2026</p>
+          <h2>Clothing in<br /><em>motion.</em></h2>
+        </div>
+        <p className="section-note">A moving study of fabric, proportion and everyday gesture.</p>
+      </div>
+      <div className="fashion-film__frame">
+        <video className="fashion-film__video" autoPlay muted loop playsInline preload="metadata" poster="/brand/artcanvas-logo.png" aria-label="ArtCanvas clothing editorial film">
+          <source src="/clothing-editorial.mp4" type="video/mp4" />
+        </video>
+        <div className="fashion-film__overlay"><span>ARTCANVAS / CLOTHING</span><span>00:10 — EDITORIAL STUDY</span></div>
+        <div className="fashion-film__center"><span>PLAYING</span><i /></div>
+      </div>
+    </section>
+  );
+}
+
 function ProductRail() {
   return (
     <section className="edit-editorial section-shell">
@@ -207,5 +228,5 @@ function WearingStory() {
   );
 }
 export default function Home() {
-  return <PageTransition><main className="home-page"><Hero /><WearingStory /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }
