@@ -1,32 +1,30 @@
-# ArtCanvas V11 — Full Updated Edition
+# ArtCanvas V13 — Clean Editorial
 
-This is the complete V11 build: V10 editorial/shop/carousel/footer/night-mode foundation plus V11 account authentication UI and studio chat.
+A polished React/Vite storefront for ArtCanvas with a minimal fashion/editorial visual system.
+
+## Included
+- Clean Manrope + Sora typography
+- Full-width responsive navbar with centered ArtCanvas wordmark
+- Dark/night mood
+- Women / Men / Children clothing navigation
+- Sticky Art of Wearing editorial chapter
+- Whats New 4-up carousel
+- Clothing editorial images and local fashion film
+- User-provided ArtCanvas logo in footer and favicon
+- Sign in / Sign up + Google demo UI
+- Member-only studio chat UI
+- Minimal responsive footer
+- Shop filters and **24 products per page** pagination
+- URL-aware pagination and filter state
+- Scroll-to-top on route/search changes
 
 ## Run
-
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite (normally http://localhost:5173/).
-
-## Included
-- Full-width responsive editorial navbar
-- Light / night mood theme
-- Home editorial sections and Art of Wearing scroll story
-- What's New horizontal carousel
-- Updated editorial footer
-- Shop categories and filtering
-- Clothing: Women / Men / Children + subcategories
-- Sign in / Sign up
-- Continue with Google demo action
-- Password visibility toggle
-- Signed-in member state
-- Floating Studio Chat; chat is frontend/demo and can later be connected to a backend
-
-## Build
-
+Production build:
 ```bash
 npm run build
 ```

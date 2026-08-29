@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
+import { Package, Shirt, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
 import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
@@ -20,16 +20,25 @@ export default function Shop() {
   const active = params.get("category") || "all";
   const gender = params.get("gender") || "all";
   const sub = params.get("sub") || "all";
+  const page = Math.max(1, Number(params.get("page") || 1));
   const [sort, setSort] = useState("Featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const setPage = (nextPage) => {
+    const next = new URLSearchParams(params);
+    if (nextPage <= 1) next.delete("page"); else next.set("page", String(nextPage));
+    setParams(next);
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "smooth" }));
+  };
 
   const setActive = (id) => {
     const next = new URLSearchParams(params);
     if (id === "all") next.delete("category");
     else next.set("category", id);
     next.delete("sub");
+    next.delete("page");
     if (id !== "clothing") next.delete("gender");
     setParams(next);
   };
@@ -38,12 +47,14 @@ export default function Shop() {
     if (id === "all") next.delete("gender");
     else next.set("gender", id);
     next.delete("sub");
+    next.delete("page");
     setParams(next);
   };
   const setSub = (id) => {
     const next = new URLSearchParams(params);
     if (id === "all") next.delete("sub");
     else next.set("sub", id);
+    next.delete("page");
     setParams(next);
   };
 
@@ -60,6 +71,15 @@ export default function Shop() {
     if (sort === "Top Rated") list.sort((a, b) => b.rating - a.rating);
     return list;
   }, [active, gender, sub, sort, maxPrice]);
+
+  const PAGE_SIZE = 24;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  useEffect(() => {
+    if (page !== safePage) setPage(safePage);
+  }, [page, safePage]);
 
   const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sub !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
   const clearFilters = () => {
@@ -340,13 +360,13 @@ export default function Shop() {
 
             <AnimatePresence mode="wait">
               <motion.div
-                key={active + sort + gender + sub + maxPrice}
+                key={active + sort + gender + sub + maxPrice + safePage}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: .35 }}
                 className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 items-start"
               >
-                {filtered.map((p, i) => (
+                {paginated.map((p, i) => (
                   <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
                     <ProductCard p={p} size="md" />
                   </motion.div>
@@ -355,6 +375,19 @@ export default function Shop() {
             </AnimatePresence>
 
             {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">No pieces found. Try adjusting your filters.</p>}
+
+            {filtered.length > 0 && (
+              <nav className="shop-pagination" aria-label="Product pagination">
+                <span className="shop-pagination__summary">Showing {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length}</span>
+                <div className="shop-pagination__controls">
+                  <button type="button" onClick={() => setPage(safePage - 1)} disabled={safePage === 1} aria-label="Previous page"><ChevronLeft size={15} /></button>
+                  {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+                    <button key={n} type="button" onClick={() => setPage(n)} className={n === safePage ? "is-current" : ""} aria-current={n === safePage ? "page" : undefined}>{n}</button>
+                  ))}
+                  <button type="button" onClick={() => setPage(safePage + 1)} disabled={safePage === pageCount} aria-label="Next page"><ChevronRight size={15} /></button>
+                </div>
+              </nav>
+            )}
           </div>
         </div>
       </section>

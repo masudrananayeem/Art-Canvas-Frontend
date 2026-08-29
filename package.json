@@ -1,7 +1,7 @@
 {
-  "name": "artcanvas-app-v11",
+  "name": "artcanvas-app-v13",
   "private": true,
-  "version": "0.0.0",
+  "version": "13.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
