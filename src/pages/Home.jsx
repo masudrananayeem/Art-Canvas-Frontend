@@ -68,7 +68,7 @@ function People() {
   const move = (direction) => setActive((v) => Math.max(0, Math.min(maxIndex, v + direction)));
   return (
     <section className="whats-new section-shell">
-      <Reveal className="section-heading-line whats-new__heading"><div><p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p><h2>What’s<br /><em>new.</em></h2></div><div className="whats-new__intro"><p className="section-note">Fresh pieces, new proportions<br />and objects worth noticing.</p><Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link></div></Reveal>
+      <Reveal className="section-heading-line whats-new__heading"><div><p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p><h2>What’s<br /><em>new.</em></h2></div><div className="whats-new__intro"><p className="section-note">New pieces, selected for now.</p><Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link></div></Reveal>
       <div className="whats-new__carousel">
         <button className="whats-new__arrow" type="button" onClick={() => move(-1)} disabled={!active} aria-label="Previous pieces"><ChevronLeft size={22}/><span>PREV</span></button>
         <div className="whats-new__viewport"><motion.div className="whats-new__track" animate={{ x: `calc(-${active} * (var(--new-card-width) + var(--new-gap)))` }} transition={{type:'spring',stiffness:260,damping:30}}>
@@ -89,7 +89,7 @@ function FashionFilm() {
           <p className="section-kicker">FILM / 2026</p>
           <h2>Clothing in<br /><em>motion.</em></h2>
         </div>
-        <p className="section-note">A moving study of fabric, proportion and everyday gesture.</p>
+        <p className="section-note">A short film from the current clothing edit.</p>
       </div>
       <div className="fashion-film__frame">
         <video className="fashion-film__video" autoPlay muted loop playsInline preload="metadata" poster="/brand/artcanvas-logo.png" aria-label="ArtCanvas clothing editorial film">
@@ -188,7 +188,7 @@ function WearingStory() {
           <div>
             <p className="section-kicker">THE ART OF WEARING</p>
             <h2>Not a trend.<br /><em>A point of view.</em></h2>
-            <p className="wearing-editorial__body">ArtCanvas brings clothing, objects and visual culture into one considered space — less catalogue, more curation.</p>
+            <p className="wearing-editorial__body">A considered edit of clothing, objects and visual culture.</p>
             <Link className="wearing-editorial__intro-link" to="/shop?category=clothing">Enter the collection <ArrowUpRight size={14} /></Link>
           </div>
         </div>
@@ -228,5 +228,5 @@ function WearingStory() {
   );
 }
 export default function Home() {
-  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. Made to be kept.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

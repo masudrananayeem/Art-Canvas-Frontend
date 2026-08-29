@@ -1,46 +1,33 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 
 export default function Footer() {
   const { dark } = useStore();
   return (
-    <footer className={`site-footer site-footer--minimal ${dark ? "site-footer--dark" : ""}`}>
-      <div className="site-footer__minimal-top">
-        <Link to="/" className="site-footer__logo-link" aria-label="ArtCanvas home">
-          <img src="/brand/artcanvas-logo.png" alt="ArtCanvas" className="site-footer__logo" />
-        </Link>
-        <div className="site-footer__brand-copy">
+    <footer className={`site-footer site-footer--clean ${dark ? "site-footer--dark" : ""}`}>
+      <div className="footer-clean__top">
+        <Link to="/" className="footer-clean__brand" aria-label="ArtCanvas home">
+          <img src="/brand/artcanvas-logo.png" alt="ArtCanvas" />
           <span>ArtCanvas</span>
-          <p>Wear. Create. Collect.</p>
-        </div>
-        <Link to="/shop" className="site-footer__minimal-cta">Explore <ArrowUpRight size={15} /></Link>
+        </Link>
+        <Link to="/shop" className="footer-clean__explore">Explore collection <ArrowUpRight size={14} /></Link>
       </div>
-
-      <div className="site-footer__minimal-grid">
-        <div>
-          <p className="site-footer__kicker">Explore</p>
-          <Link to="/shop">Shop all</Link>
+      <div className="footer-clean__body">
+        <p>Wear. Create. Collect.</p>
+        <nav aria-label="Footer navigation">
+          <Link to="/shop">Shop</Link>
           <Link to="/shop?category=clothing">Clothing</Link>
           <Link to="/gallery">Gallery</Link>
-        </div>
-        <div>
-          <p className="site-footer__kicker">Studio</p>
           <Link to="/about">About</Link>
           <Link to="/account">Account</Link>
-          <a href="mailto:studio@artcanvas.local"><Mail size={13} /> Contact</a>
-        </div>
-        <div>
-          <p className="site-footer__kicker">Follow</p>
-          <a href="https://instagram.com" target="_blank" rel="noreferrer"><span className="footer-instagram-mark">@</span> Instagram</a>
-          <span>Dhaka — Worldwide</span>
-        </div>
+        </nav>
+        <span>Dhaka — Worldwide</span>
       </div>
-
-      <div className="site-footer__minimal-bottom">
+      <div className="footer-clean__bottom">
         <span>© 2026 ArtCanvas</span>
-        <span>Independent studio / Dhaka</span>
+        <span>Independent studio</span>
         <span>Privacy · Terms</span>
       </div>
     </footer>

@@ -1,22 +1,21 @@
 # ArtCanvas V13 — Clean Editorial
 
-A polished React/Vite storefront for ArtCanvas with a minimal fashion/editorial visual system.
+This package is the corrected V13 build, based on the latest ArtCanvas codebase.
 
 ## Included
-- Clean Manrope + Sora typography
-- Full-width responsive navbar with centered ArtCanvas wordmark
-- Dark/night mood
-- Women / Men / Children clothing navigation
+- Clean Space Grotesk + DM Sans typography
+- Full-width responsive navigation
+- Clothing / Women / Men / Children browsing
+- 4-up What's New carousel
 - Sticky Art of Wearing editorial chapter
-- Whats New 4-up carousel
-- Clothing editorial images and local fashion film
-- User-provided ArtCanvas logo in footer and favicon
-- Sign in / Sign up + Google demo UI
-- Member-only studio chat UI
-- Minimal responsive footer
-- Shop filters and **24 products per page** pagination
-- URL-aware pagination and filter state
-- Scroll-to-top on route/search changes
+- Clothing editorial imagery + local fashion film
+- 24-items-per-page shop pagination
+- Sign in / Sign up + Google UI
+- Studio chat UI after sign-in
+- ArtCanvas supplied logo in footer and favicon
+- Compact redesigned footer
+- Light / night mood
+- Scroll-to-top on route changes
 
 ## Run
 ```bash
@@ -24,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Production build:
+## Production build
 ```bash
 npm run build
 ```

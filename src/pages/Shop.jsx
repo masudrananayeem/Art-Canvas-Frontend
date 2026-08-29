@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Shirt, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Package, Shirt, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
 import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
@@ -187,12 +187,12 @@ export default function Shop() {
       <div className={`h-px ${dark ? "bg-white/10" : "bg-black/10"}`} />
 
       <Link to="/gallery" className={`group block border p-4 rounded-2xl transition ${dark ? "border-white/10 bg-white/[.03]" : "border-black/10 bg-white"}`}>
-        <p className="text-[9px] tracking-[.2em] uppercase opacity-45 mb-2">Also in the studio</p>
+        <p className="text-[9px] tracking-[.2em] uppercase opacity-45 mb-2">From the studio</p>
         <div className="flex items-end justify-between gap-4"><span className="font-display italic text-2xl">Original art & editions</span><ArrowUpRight size={16} className="shrink-0 opacity-60 group-hover:translate-x-1 group-hover:-translate-y-1 transition" /></div>
       </Link>
 
       <div className="text-xs opacity-60 leading-relaxed">
-        Every piece is studio-made in small batches. Limited editions are numbered on arrival.
+        Small runs. Considered pieces.
       </div>
     </>
   );
@@ -203,13 +203,13 @@ export default function Shop() {
         <div className="max-w-6xl mx-auto">
           <p className="text-[9px] tracking-[0.25em] uppercase opacity-50 mb-2">04 — The collection</p>
           <h1 className="font-display italic text-4xl sm:text-6xl font-black tracking-[-.04em]">The Collection</h1>
-          <p className="max-w-2xl mt-4 text-sm opacity-55 leading-relaxed">Clothing is organized into <b>Women, Men and Children</b>, with dedicated sub-categories. Pick a person, then narrow the silhouette.</p>
+          <p className="max-w-2xl mt-4 text-sm opacity-55 leading-relaxed">Browse the full ArtCanvas edit, or narrow clothing by Women, Men or Children.</p>
         </div>
       </section>
 
       <section className="shop-category-strip px-6 pb-10">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-end justify-between gap-5 mb-4"><div><p className="text-[9px] tracking-[.25em] uppercase opacity-45">Browse the world</p><h2 className="font-display italic text-2xl sm:text-3xl font-bold mt-1">Shop by category</h2></div><span className="hidden sm:block text-[10px] opacity-45">{SHOP_PRODUCTS.length} pieces / {SHOP_CATEGORIES.length} categories</span></div>
+          <div className="flex items-end justify-between gap-5 mb-4"><div><p className="text-[9px] tracking-[.25em] uppercase opacity-45">Browse</p><h2 className="font-display italic text-2xl sm:text-3xl font-bold mt-1">Categories</h2></div><span className="hidden sm:block text-[10px] opacity-45">{SHOP_PRODUCTS.length} pieces / {SHOP_CATEGORIES.length} categories</span></div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             <button onClick={() => setActive("all")} className={`shop-category-tile ${active === "all" ? "is-active" : ""}`}><span className="shop-category-tile__number">00</span><span>All pieces</span></button>
             <button onClick={() => setActive("new")} className={`shop-category-tile ${active === "new" ? "is-active" : ""}`}><img src={img("ac-new-in", 260, 180)} alt="New in" /><span>New in</span></button>
