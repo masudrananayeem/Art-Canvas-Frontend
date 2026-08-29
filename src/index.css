@@ -556,3 +556,187 @@ html[data-theme="dark"] .fashion-film__frame { box-shadow:0 28px 90px rgba(0,0,0
   .fashion-film__overlay { flex-direction:column; gap:7px; }
   .site-footer__logo { width:60px; height:60px; }
 }
+
+
+/* V13 final cleanup: deterministic route scroll + compact footer + product pagination */
+html { scroll-behavior: smooth; }
+
+.shop-pagination {
+  margin-top: 56px;
+  padding-top: 22px;
+  border-top: 1px solid var(--canvas-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.shop-pagination__summary {
+  font: 500 10px/1.4 'Manrope', sans-serif;
+  letter-spacing: .04em;
+  opacity: .5;
+}
+.shop-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shop-pagination__controls > button {
+  min-width: 66px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--canvas-line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: 600 9px/1 'Manrope', sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s, color .2s, opacity .2s, transform .2s;
+}
+.shop-pagination__controls > button:hover:not(:disabled) {
+  background: var(--canvas-ink);
+  color: var(--canvas-bg);
+  transform: translateY(-1px);
+}
+.shop-pagination__controls > button:disabled {
+  opacity: .25;
+  cursor: not-allowed;
+}
+.shop-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.shop-pagination__pages button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: 600 9px/1 'Manrope', sans-serif;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.shop-pagination__pages button:hover {
+  border-color: var(--canvas-line);
+}
+.shop-pagination__pages button.is-active {
+  background: var(--canvas-ink);
+  color: var(--canvas-bg);
+}
+
+/* Keep the existing footer links, but make the footer visually quieter and more proportional. */
+.site-footer.site-footer--editorial {
+  padding-top: 48px;
+  padding-bottom: 18px;
+}
+.site-footer--editorial .footer-flag {
+  padding: 14px 0;
+  font-size: 7px;
+}
+.site-footer--editorial .footer-main {
+  padding: 46px 0 52px;
+  gap: clamp(44px, 8vw, 110px);
+}
+.site-footer--editorial .site-footer__brand {
+  gap: 10px;
+}
+.site-footer--editorial .site-footer__logo {
+  width: 52px;
+  height: 52px;
+}
+.site-footer--editorial .footer-brand .site-footer__brand span {
+  font-size: clamp(30px, 4vw, 48px) !important;
+  letter-spacing: -.075em !important;
+}
+.site-footer--editorial .footer-brand > p {
+  max-width: 370px;
+  margin: 18px 0 17px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.site-footer--editorial .site-footer__arrow-link {
+  font-size: 8px;
+  padding-bottom: 5px;
+}
+.site-footer--editorial .footer-letter h2 {
+  margin-bottom: 22px;
+  font-size: clamp(38px, 4.6vw, 62px);
+}
+.site-footer--editorial .footer-letter form {
+  max-width: 430px;
+}
+.site-footer--editorial .footer-letter input {
+  padding: 11px 0;
+  font-size: 11px;
+}
+.site-footer--editorial .footer-letter small {
+  margin-top: 9px;
+  font-size: 8px;
+}
+.site-footer--editorial .footer-links {
+  padding: 22px 0 38px;
+  gap: 22px;
+}
+.site-footer--editorial .footer-links > div {
+  gap: 8px;
+}
+.site-footer--editorial .footer-links a {
+  font-size: 10px;
+}
+.site-footer--editorial .footer-place {
+  margin-top: 8px;
+  font-size: 7px;
+}
+.site-footer--editorial .footer-bottom {
+  padding-top: 15px;
+  font-size: 6.5px;
+}
+
+@media (max-width: 780px) {
+  .shop-pagination {
+    margin-top: 42px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .shop-pagination__controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .shop-pagination__pages {
+    overflow-x: auto;
+    max-width: 55vw;
+    scrollbar-width: none;
+  }
+  .shop-pagination__pages::-webkit-scrollbar { display: none; }
+
+  .site-footer.site-footer--editorial {
+    padding-top: 36px;
+    padding-bottom: 14px;
+  }
+  .site-footer--editorial .footer-main {
+    padding: 38px 0 42px;
+    gap: 42px;
+  }
+  .site-footer--editorial .site-footer__logo {
+    width: 44px;
+    height: 44px;
+  }
+  .site-footer--editorial .footer-brand .site-footer__brand span {
+    font-size: 32px !important;
+  }
+  .site-footer--editorial .footer-letter h2 {
+    font-size: 42px;
+  }
+  .site-footer--editorial .footer-links {
+    gap: 28px 18px;
+    padding-bottom: 30px;
+  }
+  .site-footer--editorial .footer-bottom {
+    font-size: 6px;
+  }
+}

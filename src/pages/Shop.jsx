@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
@@ -24,6 +24,8 @@ export default function Shop() {
   const [sortOpen, setSortOpen] = useState(false);
   const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 24;
 
   const setActive = (id) => {
     const next = new URLSearchParams(params);
@@ -60,6 +62,22 @@ export default function Shop() {
     if (sort === "Top Rated") list.sort((a, b) => b.rating - a.rating);
     return list;
   }, [active, gender, sub, sort, maxPrice]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  useEffect(() => {
+    setPage(1);
+  }, [active, gender, sub, sort, maxPrice]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const paginatedProducts = filtered.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
+  const pageStart = filtered.length ? (page - 1) * ITEMS_PER_PAGE + 1 : 0;
+  const pageEnd = Math.min(page * ITEMS_PER_PAGE, filtered.length);
 
   const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sub !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
   const clearFilters = () => {
@@ -346,13 +364,52 @@ export default function Shop() {
                 transition={{ duration: .35 }}
                 className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 items-start"
               >
-                {filtered.map((p, i) => (
+                {paginatedProducts.map((p, i) => (
                   <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
                     <ProductCard p={p} size="md" />
                   </motion.div>
                 ))}
               </motion.div>
             </AnimatePresence>
+
+            {filtered.length > 0 && (
+              <nav className="shop-pagination" aria-label="Product pages">
+                <div className="shop-pagination__summary">
+                  Showing {pageStart}–{pageEnd} of {filtered.length} pieces
+                </div>
+                <div className="shop-pagination__controls">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </button>
+                  <div className="shop-pagination__pages">
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
+                      <button
+                        type="button"
+                        key={number}
+                        onClick={() => setPage(number)}
+                        className={page === number ? "is-active" : ""}
+                        aria-current={page === number ? "page" : undefined}
+                      >
+                        {String(number).padStart(2, "0")}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    aria-label="Next page"
+                  >
+                    Next
+                  </button>
+                </div>
+              </nav>
+            )}
 
             {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">No pieces found. Try adjusting your filters.</p>}
           </div>

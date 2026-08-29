@@ -30,3 +30,6 @@ Open the local URL printed by Vite (normally http://localhost:5173/).
 ```bash
 npm run build
 ```
+
+
+V13 corrections: route changes reset scroll to the top; Shop uses 24 products per page with pagination; footer logo and link typography are compacted without removing existing links.

@@ -16,6 +16,7 @@ import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 import Account from "./pages/Account";
 import ChatWidget from "./components/ChatWidget";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
   const { dark } = useStore();
@@ -25,11 +26,12 @@ export default function App() {
   return (
     <div className={`app-shell min-h-screen font-sans transition-colors duration-500 ${dark ? "theme-dark bg-[#111110] text-[#EDE7D9]" : "theme-light bg-[#FAF7F1] text-[#111110]"}`}>
       <ScrollProgress />
+      <ScrollToTop />
       <Navbar onMenu={() => setMenuOpen(true)} />
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+        <Routes location={location} key={`${location.pathname}${location.search}`}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetail />} />
