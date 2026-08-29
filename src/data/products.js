@@ -1,4 +1,21 @@
-export const img = (seed, w = 600, h = 800) => `https://picsum.photos/seed/${seed}/${w}/${h}`;
+import womenOuterwear from "../assets/clothing/women-outerwear.jpg";
+import womenTop from "../assets/clothing/women-top.jpg";
+import womenKnit from "../assets/clothing/women-knit.jpg";
+import menShirt from "../assets/clothing/men-shirt.jpg";
+import unisexEditorial from "../assets/clothing/unisex-editorial.jpg";
+import kidsEditorial from "../assets/clothing/kids-editorial.jpg";
+
+const CLOTHING_IMAGES = [womenOuterwear, womenTop, womenKnit, menShirt, unisexEditorial, kidsEditorial];
+const clothingSeed = (seed) => {
+  if (seed.includes("cat-clothing")) return womenOuterwear;
+  if (seed.includes("wearing-women") || seed.includes("women-editorial")) return womenOuterwear;
+  if (seed.includes("wearing-men") || seed.includes("men-editorial")) return menShirt;
+  if (seed.includes("wearing-kids") || seed.includes("kids-editorial") || seed.includes("cat-clothing")) return kidsEditorial;
+  const match = seed.match(/ac-clothing-(\d+)/);
+  if (match) return CLOTHING_IMAGES[Number(match[1]) % CLOTHING_IMAGES.length];
+  return null;
+};
+export const img = (seed, w = 600, h = 800) => clothingSeed(seed) || `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 export const CATEGORIES = [
   { id: "clothing", name: "Clothing", desc: "Structured essentials, made to last.", seed: "ac-cat-clothing" },
