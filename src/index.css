@@ -629,45 +629,71 @@ html { scroll-behavior: smooth; }
 }
 
 /* Keep the existing footer links, but make the footer visually quieter and more proportional. */
-/* Footer typography — slightly larger & cleaner */
-.site-footer--editorial {
-  font-size: 13px;
+.site-footer.site-footer--editorial {
+  padding-top: 48px;
+  padding-bottom: 18px;
 }
-
-.site-footer--editorial .site-footer__kicker {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  line-height: 1.4;
-}
-
-.site-footer--editorial .footer-links a,
-.site-footer--editorial .footer-links > div > a {
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.site-footer--editorial .footer-place {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-}
-
-.site-footer--editorial .footer-bottom {
-  font-size: 9px;
-  letter-spacing: 0.1em;
-}
-
 .site-footer--editorial .footer-flag {
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  padding: 14px 0;
+  font-size: 7px;
 }
-
-.site-footer--editorial .footer-brand p {
-  font-size: 12px;
-  line-height: 1.65;
+.site-footer--editorial .footer-main {
+  padding: 46px 0 52px;
+  gap: clamp(44px, 8vw, 110px);
 }
-
+.site-footer--editorial .site-footer__brand {
+  gap: 10px;
+}
+.site-footer--editorial .site-footer__logo {
+  width: 52px;
+  height: 52px;
+}
+.site-footer--editorial .footer-brand .site-footer__brand span {
+  font-size: clamp(30px, 4vw, 48px) !important;
+  letter-spacing: -.075em !important;
+}
+.site-footer--editorial .footer-brand > p {
+  max-width: 370px;
+  margin: 18px 0 17px;
+  font-size: 11px;
+  line-height: 1.6;
+}
 .site-footer--editorial .site-footer__arrow-link {
-  font-size: 12px;
+  font-size: 8px;
+  padding-bottom: 5px;
+}
+.site-footer--editorial .footer-letter h2 {
+  margin-bottom: 22px;
+  font-size: clamp(38px, 4.6vw, 62px);
+}
+.site-footer--editorial .footer-letter form {
+  max-width: 430px;
+}
+.site-footer--editorial .footer-letter input {
+  padding: 11px 0;
+  font-size: 11px;
+}
+.site-footer--editorial .footer-letter small {
+  margin-top: 9px;
+  font-size: 8px;
+}
+.site-footer--editorial .footer-links {
+  padding: 22px 0 38px;
+  gap: 22px;
+}
+.site-footer--editorial .footer-links > div {
+  gap: 8px;
+}
+.site-footer--editorial .footer-links a {
+  font-size: 10px;
+}
+.site-footer--editorial .footer-place {
+  margin-top: 8px;
+  font-size: 7px;
+}
+.site-footer--editorial .footer-bottom {
+  padding-top: 15px;
+  font-size: 6.5px;
 }
 
 @media (max-width: 780px) {
