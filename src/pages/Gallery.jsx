@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { PRODUCTS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 import PageTransition from "../components/PageTransition";
+import galleryHero from "../assets/clothing/women-outerwear.jpg";
 
 export default function Gallery() {
   const { dark } = useStore();
@@ -13,6 +14,20 @@ export default function Gallery() {
     <PageTransition>
       <section className="px-6 pt-10 pb-24">
         <div className="max-w-6xl mx-auto">
+          {/* Editorial image added above the existing gallery cards — card layout remains unchanged. */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            className="mb-10 overflow-hidden rounded-[4px] h-[260px] sm:h-[360px] lg:h-[440px]"
+          >
+            <img
+              src={galleryHero}
+              alt="ArtCanvas fashion editorial"
+              className="w-full h-full object-cover object-center"
+            />
+          </motion.div>
+
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-12 max-w-xl">
             <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-3">The Gallery</p>
             <h1 className="font-display italic text-4xl sm:text-5xl font-black tracking-tight mb-4">Original works, hung the way they were meant to be seen.</h1>
