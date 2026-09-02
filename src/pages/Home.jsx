@@ -4,15 +4,14 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "fra
 import { ArrowUpRight, ArrowRight, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import Reveal, { Stagger, StaggerItem } from "../components/Reveal";
-import { PRODUCTS, SUBCATEGORIES, img } from "../data/products";
+import { SUBCATEGORIES, img } from "../data/products";
+import { useStore } from "../context/StoreContext";
 
 const PEOPLE = [
   { id: "women", name: "Women", index: "01", line: "Soft structure / sharp attitude", seed: "ac-women-editorial" },
   { id: "men", name: "Men", index: "02", line: "Quiet tailoring / everyday form", seed: "ac-men-editorial" },
   { id: "kids", name: "Children", index: "03", line: "Playful proportions / easy movement", seed: "ac-kids-editorial" },
 ];
-
-const EDIT = PRODUCTS.filter((p) => p.category === "clothing").slice(0, 6);
 
 function SplitLine({ children, delay = 0 }) {
   return (
@@ -61,8 +60,8 @@ function Hero() {
   );
 }
 
-function People() {
-  const newest = PRODUCTS.slice(0, 10);
+function People({ products }) {
+  const newest = products.slice(0, 10);
   const [active, setActive] = React.useState(0);
   const maxIndex = Math.max(0, newest.length - 4);
   const move = (direction) => setActive((v) => Math.max(0, Math.min(maxIndex, v + direction)));
@@ -72,7 +71,7 @@ function People() {
       <div className="whats-new__carousel">
         <button className="whats-new__arrow" type="button" onClick={() => move(-1)} disabled={!active} aria-label="Previous pieces"><ChevronLeft size={22}/><span>PREV</span></button>
         <div className="whats-new__viewport"><motion.div className="whats-new__track" animate={{ x: `calc(-${active} * (var(--new-card-width) + var(--new-gap)))` }} transition={{type:'spring',stiffness:260,damping:30}}>
-          {newest.map((product,index)=><article key={product.id} className={`new-piece new-piece--${index%4}`}><Link to={`/product/${product.id}`} className="new-piece__link"><div className="new-piece__image"><img src={img(product.seed,760,900)} alt={product.name}/><span className="new-piece__index">{String(index+1).padStart(2,'0')}</span><span className="new-piece__tag">NEW</span><span className="new-piece__view">View piece <ArrowUpRight size={13}/></span></div><div className="new-piece__meta"><span>{product.subcategory||product.category}</span><span>${product.price}</span></div><h3>{product.name}</h3></Link></article>)}
+          {newest.map((product,index)=><article key={product.id} className={`new-piece new-piece--${index%4}`}><Link to={`/product/${product.id}`} className="new-piece__link"><div className="new-piece__image"><img src={product.image || img(product.seed,760,900)} alt={product.name}/><span className="new-piece__index">{String(index+1).padStart(2,'0')}</span><span className="new-piece__tag">NEW</span><span className="new-piece__view">View piece <ArrowUpRight size={13}/></span></div><div className="new-piece__meta"><span>{product.subcategory||product.category}</span><span>${product.price}</span></div><h3>{product.name}</h3></Link></article>)}
         </motion.div></div>
         <button className="whats-new__arrow" type="button" onClick={() => move(1)} disabled={active===maxIndex} aria-label="Next pieces"><span>NEXT</span><ChevronRight size={22}/></button>
       </div>
@@ -102,7 +101,8 @@ function FashionFilm() {
   );
 }
 
-function ProductRail() {
+function ProductRail({ products }) {
+  const EDIT = products.filter((p) => p.category === "clothing").slice(0, 6);
   return (
     <section className="edit-editorial section-shell">
       <Reveal className="section-heading-line">
@@ -127,7 +127,7 @@ function ProductRail() {
                 <motion.img
                   whileHover={{ scale: 1.06 }}
                   transition={{ duration: .7, ease: [0.22, 1, 0.36, 1] }}
-                  src={img(product.seed, 650, 820)}
+                  src={product.image || img(product.seed, 650, 820)}
                   alt={product.name}
                 />
                 <span>{String(i + 1).padStart(2, "0")}</span>
@@ -228,5 +228,6 @@ function WearingStory() {
   );
 }
 export default function Home() {
-  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People /><ProductRail /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  const { products } = useStore();
+  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People products={products} /><ProductRail products={products} /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

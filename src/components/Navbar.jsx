@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Search, Heart, ShoppingBag, Moon, Sun, Menu, ChevronDown, UserRound } from "lucide-react";
+import { Search, Heart, ShoppingBag, Moon, Sun, Menu, ChevronDown, UserRound, ShieldCheck } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 import { SUBCATEGORIES } from "../data/products";
 
@@ -14,7 +14,7 @@ const people = [
 const navClass = ({ isActive }) => `nav-link ${isActive ? "is-active" : ""}`;
 
 export default function Navbar({ onMenu }) {
-  const { dark, setDark, cartCount, wishlist, setCartOpen } = useStore();
+  const { dark, setDark, cartCount, wishlist, setCartOpen, isAdmin } = useStore();
   const [scrolled, setScrolled] = useState(false);
   const [clothingOpen, setClothingOpen] = useState(false);
   const navigate = useNavigate();
@@ -74,6 +74,7 @@ export default function Navbar({ onMenu }) {
             </nav>
             <div className="nav-actions">
               <button className="nav-icon nav-search" onClick={() => navigate("/shop")} aria-label="Search"><Search size={17} /></button>
+              {isAdmin && <button className="nav-icon" onClick={() => navigate("/admin")} aria-label="Admin dashboard"><ShieldCheck size={17} /></button>}
               <button className="nav-icon" onClick={() => navigate("/account")} aria-label="Account"><UserRound size={17} /></button>
               <button className="nav-icon nav-badge" onClick={() => navigate("/wishlist")} aria-label="Wishlist"><Heart size={17} />{wishlist.size > 0 && <span>{wishlist.size}</span>}</button>
               <button className="nav-icon nav-badge" onClick={() => setCartOpen(true)} aria-label="Bag"><ShoppingBag size={17} />{cartCount > 0 && <span>{cartCount}</span>}</button>

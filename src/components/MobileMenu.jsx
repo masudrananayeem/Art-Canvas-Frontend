@@ -4,17 +4,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useStore } from "../context/StoreContext";
 
-const LINKS = [
+const BASE_LINKS = [
   { to: "/", label: "Home" },
   { to: "/shop?category=clothing", label: "Clothing" },
   { to: "/shop", label: "Shop" },
   { to: "/gallery", label: "Gallery" },
   { to: "/about", label: "About" },
-  { to: "/account", label: "Sign in / Sign up" },
 ];
 
 export default function MobileMenu({ open, onClose }) {
-  const { dark } = useStore();
+  const { dark, user, isAdmin } = useStore();
+  const links = [
+    ...BASE_LINKS,
+    { to: "/account", label: user ? "Account" : "Sign in / Sign up" },
+    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
+  ];
   return (
     <AnimatePresence>
       {open && (
@@ -28,7 +32,7 @@ export default function MobileMenu({ open, onClose }) {
           <button className="absolute top-6 right-6" onClick={onClose} aria-label="Close menu">
             <X size={26} />
           </button>
-          {LINKS.map((l, i) => (
+          {links.map((l, i) => (
             <motion.div
               key={l.to}
               initial={{ opacity: 0, y: 20 }}

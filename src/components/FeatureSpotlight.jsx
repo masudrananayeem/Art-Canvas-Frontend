@@ -59,7 +59,7 @@ export default function FeatureSpotlight({ products = [] }) {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="aspect-[4/3] sm:aspect-[5/4] rounded-2xl overflow-hidden shadow-2xl"
                 >
-                  <img src={img(p.seed, 800, 640)} alt={p.name} className="w-full h-full object-cover" />
+                  <img src={p.image || img(p.seed, 800, 640)} alt={p.name} className="w-full h-full object-cover" />
                 </motion.div>
                 <motion.span
                   initial={{ opacity: 0, scale: 0.8 }}

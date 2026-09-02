@@ -5,13 +5,13 @@ import { Heart, Star, Plus, Minus, Share2, Truck } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import BentoGrid from "../components/BentoGrid";
 import Reveal from "../components/Reveal";
-import { getProduct, related, img } from "../data/products";
+import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const product = getProduct(id);
-  const { dark, wishlist, toggleWishlist, addToBag } = useStore();
+  const { dark, wishlist, toggleWishlist, addToBag, products, productsLoading } = useStore();
+  const product = products.find((p) => p.id === id);
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
@@ -19,10 +19,13 @@ export default function ProductDetail() {
     setQty(1);
   }, [id]);
 
-  if (!product) return <Navigate to="/shop" replace />;
+  if (!product) {
+    if (productsLoading) return <main className="px-6 py-32 text-center text-sm opacity-60">Loading…</main>;
+    return <Navigate to="/shop" replace />;
+  }
 
   const wished = wishlist.has(product.id);
-  const relatedItems = related(product);
+  const relatedItems = products.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
 
   return (
     <PageTransition>
@@ -39,7 +42,7 @@ export default function ProductDetail() {
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="aspect-[4/5] rounded-2xl overflow-hidden shadow-xl"
             >
-              <img src={img(product.seed, 800, 1000)} alt={product.name} className="w-full h-full object-cover" />
+              <img src={product.image || img(product.seed, 800, 1000)} alt={product.name} className="w-full h-full object-cover" />
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
@@ -70,12 +73,13 @@ export default function ProductDetail() {
                   <button onClick={() => setQty((q) => q + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-current/5"><Plus size={13} /></button>
                 </div>
                 <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => addToBag(product, qty)}
-                  className={`flex-1 h-11 rounded-full text-xs tracking-[0.2em] uppercase font-semibold ${dark ? "bg-[#EDE7D9] text-black" : "bg-black text-white"}`}
+                  whileHover={{ scale: product.inStock === false ? 1 : 1.03 }}
+                  whileTap={{ scale: product.inStock === false ? 1 : 0.97 }}
+                  onClick={() => product.inStock !== false && addToBag(product, qty)}
+                  disabled={product.inStock === false}
+                  className={`flex-1 h-11 rounded-full text-xs tracking-[0.2em] uppercase font-semibold ${product.inStock === false ? "opacity-40 cursor-not-allowed" : ""} ${dark ? "bg-[#EDE7D9] text-black" : "bg-black text-white"}`}
                 >
-                  Add to Bag
+                  {product.inStock === false ? "Out of Stock" : "Add to Bag"}
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.85 }}

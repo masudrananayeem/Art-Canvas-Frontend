@@ -4,25 +4,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
-import { CATEGORIES, GENDERS, SUBCATEGORIES, PRODUCTS, img } from "../data/products";
+import { CATEGORIES, GENDERS, SUBCATEGORIES, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 const SHOP_CATEGORIES = CATEGORIES;
-const SHOP_PRODUCTS = PRODUCTS;
 
 const ICONS = { clothing: Shirt, art: Palette, objects: Package, accessories: Gift, gifts: Gift };
 const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Top Rated"];
-const MAX_PRICE = Math.max(...SHOP_PRODUCTS.map((p) => p.price));
 
 export default function Shop() {
-  const { dark } = useStore();
+  const { dark, products, productsLoading } = useStore();
+  const SHOP_PRODUCTS = products;
+  const MAX_PRICE = useMemo(() => (products.length ? Math.ceil(Math.max(...products.map((p) => p.price))) : 1000), [products]);
   const [params, setParams] = useSearchParams();
   const active = params.get("category") || "all";
   const gender = params.get("gender") || "all";
   const sub = params.get("sub") || "all";
   const [sort, setSort] = useState("Featured");
   const [sortOpen, setSortOpen] = useState(false);
-  const [maxPrice, setMaxPrice] = useState(MAX_PRICE);
+  const [maxPrice, setMaxPrice] = useState(1000);
+  useEffect(() => { setMaxPrice(MAX_PRICE); }, [MAX_PRICE]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 24;
@@ -52,7 +53,7 @@ export default function Shop() {
   const availableSubs = gender !== "all" ? SUBCATEGORIES[gender] || [] : [];
 
   const filtered = useMemo(() => {
-    let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => b.id - a.id).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
+    let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
     if (gender !== "all") list = list.filter((p) => p.gender === gender || p.gender === "unisex");
     if (sub !== "all") list = list.filter((p) => p.subcategory === sub);
     list = list.filter((p) => p.price <= maxPrice);
@@ -411,7 +412,7 @@ export default function Shop() {
               </nav>
             )}
 
-            {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">No pieces found. Try adjusting your filters.</p>}
+            {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">{productsLoading ? "Loading pieces…" : "No pieces found. Try adjusting your filters."}</p>}
           </div>
         </div>
       </section>

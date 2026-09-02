@@ -1,14 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PRODUCTS, img } from "../data/products";
+import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 import PageTransition from "../components/PageTransition";
 import galleryHero from "../assets/clothing/women-outerwear.jpg";
 
 export default function Gallery() {
-  const { dark } = useStore();
-  const art = PRODUCTS.filter((p) => p.category === "art");
+  const { dark, products } = useStore();
+  const art = products.filter((p) => p.category === "art");
 
   return (
     <PageTransition>
@@ -46,7 +46,7 @@ export default function Gallery() {
                 <Link to={`/product/${a.id}`} className="group block">
                   <div className={`aspect-[4/5] overflow-hidden border-8 ${dark ? "border-white/5 bg-white/5" : "border-black/5 bg-white"} shadow-md group-hover:shadow-2xl transition-shadow duration-300`}>
                     <motion.img
-                      src={img(a.seed, 700, 900)}
+                      src={a.image || img(a.seed, 700, 900)}
                       alt={a.name}
                       whileHover={{ scale: 1.06 }}
                       transition={{ duration: 0.6, ease: "easeOut" }}

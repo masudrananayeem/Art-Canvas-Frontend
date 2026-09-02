@@ -3,12 +3,11 @@ import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import BentoGrid from "../components/BentoGrid";
-import { PRODUCTS } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 export default function Wishlist() {
-  const { wishlist } = useStore();
-  const items = PRODUCTS.filter((p) => wishlist.has(p.id));
+  const { wishlist, products } = useStore();
+  const items = products.filter((p) => wishlist.has(p.id));
 
   return (
     <PageTransition>
