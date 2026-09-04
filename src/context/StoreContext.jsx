@@ -12,6 +12,8 @@ import { api } from "../lib/api";
 
 const StoreContext = createContext(null);
 
+const EMPTY_SITE_CONTENT = { heroImage: "", heroHeadline: "", heroTagline: "" };
+
 export function StoreProvider({ children }) {
   const [dark, setDark] = useState(false);
   const [cart, setCart] = useState([]);
@@ -22,7 +24,10 @@ export function StoreProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
 
+  const [siteContent, setSiteContent] = useState(EMPTY_SITE_CONTENT);
+
   const [firebaseUser, setFirebaseUser] = useState(null);
+  const [profile, setProfile] = useState(null); // { name, phone, photoURL, address, admin }
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
@@ -45,9 +50,29 @@ export function StoreProvider({ children }) {
     }
   }, []);
 
+  const refreshSiteContent = useCallback(async () => {
+    try {
+      const content = await api.getSiteContent();
+      setSiteContent({ ...EMPTY_SITE_CONTENT, ...content });
+    } catch (e) {
+      console.error("Failed to load site content", e);
+    }
+  }, []);
+
   useEffect(() => {
     refreshProducts();
-  }, [refreshProducts]);
+    refreshSiteContent();
+  }, [refreshProducts, refreshSiteContent]);
+
+  const refreshMyProfile = useCallback(async () => {
+    try {
+      const me = await api.me();
+      setProfile(me);
+      setIsAdmin(!!me.admin);
+    } catch (e) {
+      console.error("Failed to load profile", e);
+    }
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (fbUser) => {
@@ -55,17 +80,35 @@ export function StoreProvider({ children }) {
       if (fbUser) {
         const token = await fbUser.getIdTokenResult(true).catch(() => null);
         setIsAdmin(!!token?.claims?.admin);
+        refreshMyProfile();
       } else {
         setIsAdmin(false);
+        setProfile(null);
       }
       setAuthLoading(false);
     });
     return unsub;
-  }, []);
+  }, [refreshMyProfile]);
 
   const user = firebaseUser
-    ? { uid: firebaseUser.uid, name: firebaseUser.displayName || firebaseUser.email, email: firebaseUser.email }
+    ? {
+        uid: firebaseUser.uid,
+        name: profile?.name || firebaseUser.displayName || firebaseUser.email,
+        email: firebaseUser.email,
+        phone: profile?.phone || "",
+        photoURL: profile?.photoURL || firebaseUser.photoURL || "",
+        address: profile?.address || null,
+      }
     : null;
+
+  const updateMyProfile = async (patch) => {
+    const saved = await api.updateMe(patch);
+    setProfile(saved);
+    if (patch.name && firebaseUser) {
+      updateProfile(firebaseUser, { displayName: patch.name }).catch(() => {});
+    }
+    return saved;
+  };
 
   const clearAuthError = () => setAuthError(null);
 
@@ -74,6 +117,7 @@ export function StoreProvider({ children }) {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       if (name) await updateProfile(cred.user, { displayName: name });
+      if (name) await api.updateMe({ name }).catch(() => {});
       return true;
     } catch (e) {
       setAuthError(friendlyAuthError(e));
@@ -134,12 +178,14 @@ export function StoreProvider({ children }) {
 
   // Places the order with the backend (validates + decrements real stock),
   // then clears the local cart and refreshes product stock levels.
-  const checkout = async (shipping) => {
+  const checkout = async (shipping, paymentMethod, paymentRef) => {
     if (!user) throw new Error("Sign in to check out.");
     if (cart.length === 0) throw new Error("Your bag is empty.");
     const order = await api.placeOrder(
       cart.map((i) => ({ id: i.id, qty: i.qty })),
-      shipping
+      shipping,
+      paymentMethod,
+      paymentRef
     );
     setCart([]);
     setCartOpen(false);
@@ -167,6 +213,9 @@ export function StoreProvider({ children }) {
       productsLoading,
       refreshProducts,
 
+      siteContent,
+      refreshSiteContent,
+
       user,
       isAuthenticated: !!user,
       isAdmin,
@@ -177,11 +226,13 @@ export function StoreProvider({ children }) {
       signInWithEmail,
       signInWithGoogle,
       signOut,
+      updateMyProfile,
+      refreshMyProfile,
 
       chatMessages,
       sendMessage,
     }),
-    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading]
+    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent]
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

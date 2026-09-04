@@ -14,7 +14,7 @@ const people = [
 const navClass = ({ isActive }) => `nav-link ${isActive ? "is-active" : ""}`;
 
 export default function Navbar({ onMenu }) {
-  const { dark, setDark, cartCount, wishlist, setCartOpen, isAdmin } = useStore();
+  const { dark, setDark, cartCount, wishlist, setCartOpen, isAdmin, user } = useStore();
   const [scrolled, setScrolled] = useState(false);
   const [clothingOpen, setClothingOpen] = useState(false);
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ export default function Navbar({ onMenu }) {
             <div className="nav-actions">
               <button className="nav-icon nav-search" onClick={() => navigate("/shop")} aria-label="Search"><Search size={17} /></button>
               {isAdmin && <button className="nav-icon" onClick={() => navigate("/admin")} aria-label="Admin dashboard"><ShieldCheck size={17} /></button>}
-              <button className="nav-icon" onClick={() => navigate("/account")} aria-label="Account"><UserRound size={17} /></button>
+              <button className="nav-icon" onClick={() => navigate("/account")} aria-label="Account">{user?.photoURL ? <img src={user.photoURL} alt="" className="w-[17px] h-[17px] rounded-full object-cover" /> : <UserRound size={17} />}</button>
               <button className="nav-icon nav-badge" onClick={() => navigate("/wishlist")} aria-label="Wishlist"><Heart size={17} />{wishlist.size > 0 && <span>{wishlist.size}</span>}</button>
               <button className="nav-icon nav-badge" onClick={() => setCartOpen(true)} aria-label="Bag"><ShoppingBag size={17} />{cartCount > 0 && <span>{cartCount}</span>}</button>
               <motion.button whileTap={{ scale: .88, rotate: 180 }} className="nav-icon nav-theme" onClick={() => setDark((d) => !d)} aria-label="Toggle theme">{dark ? <Sun size={15} /> : <Moon size={15} />}</motion.button>

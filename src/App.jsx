@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 import Account from "./pages/Account";
+import Checkout from "./pages/Checkout";
 import Admin from "./pages/Admin";
 import AdminRoute from "./components/AdminRoute";
 import ChatWidget from "./components/ChatWidget";
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

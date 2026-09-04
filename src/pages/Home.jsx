@@ -33,22 +33,29 @@ function MagneticLink({ children, className = "", to }) {
   );
 }
 
-function Hero() {
+function Hero({ siteContent }) {
   const ref = useRef(null);
+  const heroImage = siteContent?.heroImage;
+  const heroHeadline = siteContent?.heroHeadline;
+  const heroTagline = siteContent?.heroTagline;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const titleY = useTransform(scrollYProgress, [0, 1], [0, 90]);
   const opacity = useTransform(scrollYProgress, [0, .7], [1, 0]);
   return (
     <section ref={ref} className="hero-editorial">
-      <motion.img style={{ y: imageY, scale: 1.08 }} src={img("ac-hero-new", 1800, 1200)} alt="ArtCanvas latest collection" className="hero-editorial__image" />
+      <motion.img style={{ y: imageY, scale: 1.08 }} src={heroImage || img("ac-hero-new", 1800, 1200)} alt="ArtCanvas latest collection" className="hero-editorial__image" />
       <div className="hero-editorial__shade" />
       <div className="hero-editorial__grid" />
       <motion.div style={{ opacity }} className="hero-editorial__top"><p>ARTCANVAS / NEW SEASON</p><p>DROP 04 — 2026</p></motion.div>
       <motion.div style={{ opacity }} className="hero-editorial__side"><span>SCROLL</span><i /><span>01 — 04</span></motion.div>
       <motion.div style={{ y: titleY }} className="hero-editorial__content">
-        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }} className="eyebrow-light">A STUDY IN EVERYDAY FORM</motion.p>
-        <h1><SplitLine delay={.22}>Wear the</SplitLine><SplitLine delay={.34}><em>unfamiliar.</em></SplitLine></h1>
+        <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }} className="eyebrow-light">{heroTagline || "A STUDY IN EVERYDAY FORM"}</motion.p>
+        {heroHeadline ? (
+          <h1><SplitLine delay={.22}>{heroHeadline}</SplitLine></h1>
+        ) : (
+          <h1><SplitLine delay={.22}>Wear the</SplitLine><SplitLine delay={.34}><em>unfamiliar.</em></SplitLine></h1>
+        )}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .5 }} className="hero-editorial__actions">
           <MagneticLink to="/shop?category=clothing" className="hero-cta">Explore the collection <ArrowUpRight size={15} /></MagneticLink>
           <span>Designed in small runs.<br />Made to be kept.</span>
@@ -102,7 +109,8 @@ function FashionFilm() {
 }
 
 function ProductRail({ products }) {
-  const EDIT = products.filter((p) => p.category === "clothing").slice(0, 6);
+  const featured = products.filter((p) => p.isFeatured);
+  const EDIT = (featured.length ? featured : products.filter((p) => p.category === "clothing")).slice(0, 6);
   return (
     <section className="edit-editorial section-shell">
       <Reveal className="section-heading-line">
@@ -228,6 +236,6 @@ function WearingStory() {
   );
 }
 export default function Home() {
-  const { products } = useStore();
-  return <PageTransition><main className="home-page"><Hero /><WearingStory /><FashionFilm /><People products={products} /><ProductRail products={products} /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  const { products, siteContent } = useStore();
+  return <PageTransition><main className="home-page"><Hero siteContent={siteContent} /><WearingStory /><FashionFilm /><People products={products} /><ProductRail products={products} /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

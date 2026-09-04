@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Mail, Lock, UserRound, Eye, EyeOff, Package, ShieldCheck } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowUpRight, Mail, Lock, UserRound, Eye, EyeOff, ShieldCheck, Camera, Loader2 } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PageTransition from "../components/PageTransition";
 import { useStore } from "../context/StoreContext";
-import { api } from "../lib/api";
+import { api, uploadProfileImage } from "../lib/api";
 
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
@@ -34,7 +34,7 @@ function OrderHistory() {
         <div key={o.id} className="border border-current/10 rounded-2xl p-4">
           <div className="flex items-center justify-between text-xs opacity-60 mb-3">
             <span>{new Date(o.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
-            <span className="capitalize">{o.status}</span>
+            <span className="capitalize">{o.status} · {o.paymentMethod === "cod" ? "Cash on delivery" : o.paymentMethod === "bkash" ? "bKash" : o.paymentMethod === "nagad" ? "Nagad" : ""}</span>
           </div>
           <div className="space-y-1.5">
             {o.items.map((it, i) => (
@@ -44,6 +44,11 @@ function OrderHistory() {
               </div>
             ))}
           </div>
+          {o.shipping && (
+            <p className="text-xs opacity-50 mt-2">
+              Shipped to: {o.shipping.fullName}, {o.shipping.line1}{o.shipping.city ? `, ${o.shipping.city}` : ""}
+            </p>
+          )}
           <div className="flex items-center justify-between text-sm font-semibold mt-3 pt-3 border-t border-current/10">
             <span>Total</span>
             <span className="font-mono">${o.total.toFixed(2)}</span>
@@ -54,11 +59,161 @@ function OrderHistory() {
   );
 }
 
+function ProfileEditor() {
+  const { user, updateMyProfile } = useStore();
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    line1: user?.address?.line1 || "",
+    line2: user?.address?.line2 || "",
+    city: user?.address?.city || "",
+    state: user?.address?.state || "",
+    zip: user?.address?.zip || "",
+    country: user?.address?.country || "Bangladesh",
+  });
+  const [photoURL, setPhotoURL] = useState(user?.photoURL || "");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState(null);
+  const [synced, setSynced] = useState(false);
+
+  // Profile fields load asynchronously right after sign-in, so the form may
+  // mount before they arrive — sync once when they do (but only once, so we
+  // don't clobber text the person is actively editing).
+  useEffect(() => {
+    if (synced || !user) return;
+    if (user.name || user.phone || user.address || user.photoURL) {
+      setForm({
+        name: user.name || "",
+        phone: user.phone || "",
+        line1: user.address?.line1 || "",
+        line2: user.address?.line2 || "",
+        city: user.address?.city || "",
+        state: user.address?.state || "",
+        zip: user.address?.zip || "",
+        country: user.address?.country || "Bangladesh",
+      });
+      setPhotoURL(user.photoURL || "");
+      setSynced(true);
+    }
+  }, [user, synced]);
+
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const pickPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploadingPhoto(true);
+    try {
+      const uploaded = await uploadProfileImage(file);
+      setPhotoURL(uploaded.url);
+      await updateMyProfile({ photoURL: uploaded.url });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const save = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSaving(true);
+    try {
+      await updateMyProfile({
+        name: form.name,
+        phone: form.phone,
+        address: { fullName: form.name, phone: form.phone, line1: form.line1, line2: form.line2, city: form.city, state: form.state, zip: form.zip, country: form.country },
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="mt-6 space-y-4">
+      <p className="section-kicker">PROFILE</p>
+
+      <div className="flex items-center gap-4">
+        <div className="relative w-16 h-16 shrink-0">
+          {photoURL ? (
+            <img src={photoURL} alt="" className="w-16 h-16 rounded-full object-cover" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-current/10 flex items-center justify-center">
+              <UserRound size={22} className="opacity-50" />
+            </div>
+          )}
+          <label className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center cursor-pointer">
+            {uploadingPhoto ? <Loader2 size={11} className="animate-spin" /> : <Camera size={11} />}
+            <input type="file" accept="image/*" className="hidden" onChange={pickPhoto} disabled={uploadingPhoto} />
+          </label>
+        </div>
+        <p className="text-xs opacity-50">Click the camera icon to change your profile photo.</p>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">Name</span>
+          <input value={form.name} onChange={set("name")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">Phone</span>
+          <input value={form.phone} onChange={set("phone")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="01XXXXXXXXX" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs sm:col-span-2">
+          <span className="opacity-60">Address line 1</span>
+          <input value={form.line1} onChange={set("line1")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="House, road, area" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs sm:col-span-2">
+          <span className="opacity-60">Address line 2</span>
+          <input value={form.line2} onChange={set("line2")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">City</span>
+          <input value={form.city} onChange={set("city")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">District / State</span>
+          <input value={form.state} onChange={set("state")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">ZIP / Postal code</span>
+          <input value={form.zip} onChange={set("zip")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="opacity-60">Country</span>
+          <input value={form.country} onChange={set("country")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" />
+        </label>
+      </div>
+
+      {error && <p className="text-xs text-[#A8431E]">{error}</p>}
+
+      <button type="submit" disabled={saving} className="px-5 py-2.5 rounded-full text-xs font-semibold uppercase bg-black text-white disabled:opacity-50">
+        {saving ? "Saving…" : "Save profile"}
+      </button>
+      {saved && <span className="text-xs text-emerald-600 ml-3">Saved.</span>}
+    </form>
+  );
+}
+
 export default function Account() {
   const { dark, user, isAdmin, authLoading, authError, clearAuthError, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut } = useStore();
   const [mode, setMode] = useState("signin");
   const [show, setShow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const next = params.get("next");
+
+  useEffect(() => {
+    if (user && next) navigate(next, { replace: true });
+  }, [user, next, navigate]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -114,6 +269,7 @@ export default function Account() {
                 <button onClick={signOut} className="account-secondary">
                   Sign out
                 </button>
+                <ProfileEditor />
                 <OrderHistory />
               </div>
             ) : (

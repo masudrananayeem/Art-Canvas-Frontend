@@ -1,34 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Minus, Loader2 } from "lucide-react";
+import { X, Plus, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 export default function CartDrawer() {
-  const { dark, cart, cartOpen, setCartOpen, removeFromCart, updateQty, subtotal, checkout, user } = useStore();
+  const { dark, cart, cartOpen, setCartOpen, removeFromCart, updateQty, subtotal, user } = useStore();
   const navigate = useNavigate();
-  const [placing, setPlacing] = useState(false);
-  const [error, setError] = useState(null);
-  const [placed, setPlaced] = useState(false);
 
-  const handleCheckout = async () => {
-    setError(null);
-    if (!user) {
-      setCartOpen(false);
-      navigate("/account");
-      return;
-    }
-    setPlacing(true);
-    try {
-      await checkout();
-      setPlaced(true);
-      setTimeout(() => setPlaced(false), 3000);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setPlacing(false);
-    }
+  const goToCheckout = () => {
+    setCartOpen(false);
+    navigate(user ? "/checkout" : "/account?next=/checkout");
   };
 
   return (
@@ -93,15 +76,12 @@ export default function CartDrawer() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
-                disabled={cart.length === 0 || placing}
-                onClick={handleCheckout}
+                disabled={cart.length === 0}
+                onClick={goToCheckout}
                 className={`w-full h-11 text-xs tracking-[0.2em] uppercase rounded-full disabled:opacity-40 flex items-center justify-center gap-2 ${dark ? "bg-[#EDE7D9] text-black" : "bg-black text-white"}`}
               >
-                {placing && <Loader2 size={14} className="animate-spin" />}
-                {placing ? "Placing order…" : user ? "Checkout" : "Sign in to checkout"}
+                {user ? "Checkout" : "Sign in to checkout"}
               </motion.button>
-              {error && <p className="text-xs text-[#A8431E] mt-2">{error}</p>}
-              {placed && <p className="text-xs text-emerald-600 mt-2">Order placed! Check your account for the receipt.</p>}
             </div>
           </motion.div>
         </motion.div>

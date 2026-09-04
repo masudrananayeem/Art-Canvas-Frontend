@@ -37,16 +37,29 @@ dashboard (a shield icon appears in the navbar once you are one).
 
 ## 4. What's in the app
 
-- **Everyone:** browse `/shop`, view products, add to bag, checkout (after
-  signing in) — checkout calls the backend, which validates and decrements
-  real stock.
-- **Signed-in users:** `/account` shows their profile and full purchase
-  history.
-- **Admins:** `/admin` — add products (name, price, category, gender/
-  subcategory, stock, image upload straight to Cloudinary), edit price/
-  stock inline, delete products, and review all orders. Products with 0
-  stock automatically show "Out of Stock" to shoppers instead of a
-  quantity.
+- **Everyone:** browse `/shop`, view products (including Art, browsable at
+  `/gallery`), add to bag.
+- **Signed-in users:** `/account` — editable profile (photo, name, phone,
+  address), full purchase history. `/checkout` — a dedicated checkout page
+  that collects shipping details (prefilled from their saved profile) and a
+  payment method: Cash on Delivery, bKash, or Nagad (with transaction ID).
+  Placing an order calls the backend, which validates and decrements real
+  stock.
+- **Admins:** `/admin`, with three tabs:
+  - **Products** — add products in any category (clothing, art, objects,
+    accessories, gifts) with price, stock, and an image uploaded straight to
+    Cloudinary. Art/objects/accessories get a free-text "medium / style"
+    field instead of the clothing size dropdowns. Edit price/stock inline,
+    star a product to feature it on the homepage, or delete it — every
+    change shows up across the whole site immediately, not just in the
+    dashboard.
+  - **Orders** — every order placed, with shipping details and payment
+    method.
+  - **Home** — upload the homepage hero image and edit its headline/
+    tagline; leave empty to keep the default.
+  
+  Products with 0 stock automatically show "Out of Stock" to shoppers
+  instead of a quantity.
 
 ## 5. Deploy to Cloudflare Pages
 
