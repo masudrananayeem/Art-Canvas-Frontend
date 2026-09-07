@@ -57,12 +57,11 @@ export default function ProductDetail() {
                 <span className="text-xs opacity-60">{product.rating} ({product.reviews} reviews)</span>
               </div>
               <p className="font-mono text-2xl mb-1">${product.price.toFixed(2)}</p>
-              {product.edition && <p className="text-xs font-mono opacity-60 mb-4">Edition {product.edition}</p>}
-              <p className="text-sm opacity-75 leading-relaxed mb-6 max-w-md">{product.story}</p>
+              {product.description && <p className="text-sm opacity-75 leading-relaxed mb-6 max-w-md">{product.description}</p>}
 
               <div className="space-y-2 text-xs opacity-70 mb-6 max-w-md">
-                <div className="flex justify-between border-t border-current/10 py-2"><span>Material</span><span>{product.material}</span></div>
-                <div className="flex justify-between border-t border-current/10 py-2"><span>Size</span><span>{product.size}</span></div>
+                <div className="flex justify-between border-t border-current/10 py-2"><span>Category</span><span className="capitalize">{product.category}</span></div>
+                {product.subcategory && <div className="flex justify-between border-t border-current/10 py-2"><span>{product.category === "art" ? "Medium" : "Style"}</span><span>{product.subcategory}</span></div>}
                 <div className="flex justify-between border-t border-current/10 py-2 border-b"><span className="flex items-center gap-1"><Truck size={12}/> Shipping</span><span>5–8 business days</span></div>
               </div>
 

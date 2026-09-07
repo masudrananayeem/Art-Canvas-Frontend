@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, CheckCircle2, Truck, Wallet } from "lucide-react";
@@ -31,6 +31,29 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState(null);
   const [order, setOrder] = useState(null);
+
+  const [synced, setSynced] = useState(false);
+
+  // Profile fields (name/phone/address) load asynchronously right after
+  // sign-in, so this form may mount before they arrive — sync once when they
+  // do, without overwriting anything the person has already typed.
+  useEffect(() => {
+    if (synced || !user) return;
+    if (user.name || user.phone || user.address) {
+      setForm((f) => ({
+        ...f,
+        fullName: f.fullName || user.name || "",
+        phone: f.phone || user.phone || "",
+        line1: f.line1 || user.address?.line1 || "",
+        line2: f.line2 || user.address?.line2 || "",
+        city: f.city || user.address?.city || "",
+        state: f.state || user.address?.state || "",
+        zip: f.zip || user.address?.zip || "",
+        country: user.address?.country || f.country,
+      }));
+      setSynced(true);
+    }
+  }, [user, synced]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 

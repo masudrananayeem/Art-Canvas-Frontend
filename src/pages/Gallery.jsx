@@ -56,9 +56,9 @@ export default function Gallery() {
                   <div className="mt-4 flex justify-between items-start">
                     <div>
                       <p className="italic font-medium">{a.name}</p>
-                      <p className="text-xs opacity-50">{a.material}</p>
+                      {a.subcategory && <p className="text-xs opacity-50">{a.subcategory}</p>}
                     </div>
-                    <span className="opacity-50 font-mono text-xs shrink-0 ml-3">Ed. {a.edition}</span>
+                    {a.inStock === false && <span className="opacity-60 font-mono text-[10px] uppercase tracking-wide shrink-0 ml-3">Out of stock</span>}
                   </div>
                   <p className="font-mono text-sm mt-1">${a.price.toFixed(2)}</p>
                 </Link>
