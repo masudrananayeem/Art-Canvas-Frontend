@@ -36,6 +36,7 @@ export const api = {
   getProducts: () => request("/api/products"),
   getProduct: (id) => request(`/api/products/${id}`),
   getSiteContent: () => request("/api/site-content"),
+  getCategories: () => request("/api/categories"),
 
   // authenticated user
   me: () => request("/api/me", { auth: true }),
@@ -52,6 +53,8 @@ export const api = {
   deleteProduct: (id) => request(`/api/admin/products/${id}`, { method: "DELETE", auth: true }),
   adminCloudinarySignature: (context = "product") => request("/api/admin/cloudinary-signature", { method: "POST", body: { context }, auth: true }),
   updateSiteContent: (patch) => request("/api/admin/site-content", { method: "PATCH", body: patch, auth: true }),
+  createCategory: (name) => request("/api/admin/categories", { method: "POST", body: { name }, auth: true }),
+  deleteCategory: (id) => request(`/api/admin/categories/${id}`, { method: "DELETE", auth: true }),
   allOrders: () => request("/api/admin/orders", { auth: true }),
 };
 

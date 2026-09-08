@@ -4,17 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
-import { CATEGORIES, GENDERS, SUBCATEGORIES, img } from "../data/products";
+import { GENDERS, SUBCATEGORIES, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
-
-const SHOP_CATEGORIES = CATEGORIES;
 
 const ICONS = { clothing: Shirt, art: Palette, objects: Package, accessories: Gift, gifts: Gift };
 const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Top Rated"];
 
 export default function Shop() {
-  const { dark, products, productsLoading } = useStore();
+  const { dark, products, productsLoading, categories } = useStore();
   const SHOP_PRODUCTS = products;
+  const SHOP_CATEGORIES = categories;
   const MAX_PRICE = useMemo(() => (products.length ? Math.ceil(Math.max(...products.map((p) => p.price))) : 1000), [products]);
   const [params, setParams] = useSearchParams();
   const active = params.get("category") || "all";
@@ -101,7 +100,7 @@ export default function Shop() {
             <span className="text-[10px] opacity-70">{SHOP_PRODUCTS.length}</span>
           </button>
           {SHOP_CATEGORIES.map((c) => {
-            const Icon = ICONS[c.id];
+            const Icon = ICONS[c.id] || Sparkles;
             const count = SHOP_PRODUCTS.filter((p) => p.category === c.id).length;
             return (
               <button
@@ -212,7 +211,7 @@ export default function Shop() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             <button onClick={() => setActive("all")} className={`shop-category-tile ${active === "all" ? "is-active" : ""}`}><span className="shop-category-tile__number">00</span><span>All pieces</span></button>
             <button onClick={() => setActive("new")} className={`shop-category-tile ${active === "new" ? "is-active" : ""}`}><img src={img("ac-new-in", 260, 180)} alt="New in" /><span>New in</span></button>
-            {SHOP_CATEGORIES.map((c) => <button key={c.id} onClick={() => setActive(c.id)} className={`shop-category-tile ${active === c.id ? "is-active" : ""}`}><img src={img(c.seed, 260, 180)} alt="" /><span>{c.name}</span></button>)}
+            {SHOP_CATEGORIES.map((c) => <button key={c.id} onClick={() => setActive(c.id)} className={`shop-category-tile ${active === c.id ? "is-active" : ""}`}><img src={img(c.seed || c.id, 260, 180)} alt="" /><span>{c.name}</span></button>)}
           </div>
         </div>
       </section>

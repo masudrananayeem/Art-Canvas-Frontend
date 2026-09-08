@@ -45,14 +45,17 @@ dashboard (a shield icon appears in the navbar once you are one).
   payment method: Cash on Delivery, bKash, or Nagad (with transaction ID).
   Placing an order calls the backend, which validates and decrements real
   stock.
-- **Admins:** `/admin`, with three tabs:
+- **Admins:** `/admin`, with four tabs:
   - **Products** — add products in any category (clothing, art, objects,
-    accessories, gifts) with price, stock, and an image uploaded straight to
-    Cloudinary. Art/objects/accessories get a free-text "medium / style"
-    field instead of the clothing size dropdowns. Edit price/stock inline,
-    star a product to feature it on the homepage, or delete it — every
-    change shows up across the whole site immediately, not just in the
-    dashboard.
+    accessories, gifts, or any category you've added) with price, stock,
+    and an image uploaded straight to Cloudinary. Art/objects/accessories
+    get a free-text "medium / style" field instead of the clothing size
+    dropdowns. Edit price/stock inline, star a product to feature it on the
+    homepage, or delete it — every change shows up across the whole site
+    immediately, not just in the dashboard.
+  - **Categories** — add a new category (just type a name) or delete one
+    you added. The 5 default categories can't be deleted; a custom one
+    can't be deleted while products still use it, to avoid orphaning them.
   - **Orders** — every order placed, with shipping details and payment
     method.
   - **Home** — upload the homepage hero image and edit its headline/

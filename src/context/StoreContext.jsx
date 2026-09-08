@@ -25,6 +25,7 @@ export function StoreProvider({ children }) {
   const [productsLoading, setProductsLoading] = useState(true);
 
   const [siteContent, setSiteContent] = useState(EMPTY_SITE_CONTENT);
+  const [categories, setCategories] = useState([]);
 
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [profile, setProfile] = useState(null); // { name, phone, photoURL, address, admin }
@@ -59,10 +60,20 @@ export function StoreProvider({ children }) {
     }
   }, []);
 
+  const refreshCategories = useCallback(async () => {
+    try {
+      const list = await api.getCategories();
+      setCategories(list);
+    } catch (e) {
+      console.error("Failed to load categories", e);
+    }
+  }, []);
+
   useEffect(() => {
     refreshProducts();
     refreshSiteContent();
-  }, [refreshProducts, refreshSiteContent]);
+    refreshCategories();
+  }, [refreshProducts, refreshSiteContent, refreshCategories]);
 
   const refreshMyProfile = useCallback(async () => {
     try {
@@ -216,6 +227,9 @@ export function StoreProvider({ children }) {
       siteContent,
       refreshSiteContent,
 
+      categories,
+      refreshCategories,
+
       user,
       isAuthenticated: !!user,
       isAdmin,
@@ -232,7 +246,7 @@ export function StoreProvider({ children }) {
       chatMessages,
       sendMessage,
     }),
-    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent]
+    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent, categories]
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
