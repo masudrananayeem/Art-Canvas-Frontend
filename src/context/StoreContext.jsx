@@ -26,6 +26,7 @@ export function StoreProvider({ children }) {
 
   const [siteContent, setSiteContent] = useState(EMPTY_SITE_CONTENT);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState({ women: [], men: [], kids: [] });
 
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [profile, setProfile] = useState(null); // { name, phone, photoURL, address, admin }
@@ -69,11 +70,23 @@ export function StoreProvider({ children }) {
     }
   }, []);
 
+  const refreshSubcategories = useCallback(async () => {
+    try {
+      const detailed = await api.getSubcategories();
+      const flat = {};
+      for (const gender of Object.keys(detailed)) flat[gender] = detailed[gender].map((s) => s.name);
+      setSubcategories(flat);
+    } catch (e) {
+      console.error("Failed to load sub-categories", e);
+    }
+  }, []);
+
   useEffect(() => {
     refreshProducts();
     refreshSiteContent();
     refreshCategories();
-  }, [refreshProducts, refreshSiteContent, refreshCategories]);
+    refreshSubcategories();
+  }, [refreshProducts, refreshSiteContent, refreshCategories, refreshSubcategories]);
 
   const refreshMyProfile = useCallback(async () => {
     try {
@@ -230,6 +243,9 @@ export function StoreProvider({ children }) {
       categories,
       refreshCategories,
 
+      subcategories,
+      refreshSubcategories,
+
       user,
       isAuthenticated: !!user,
       isAdmin,
@@ -246,7 +262,7 @@ export function StoreProvider({ children }) {
       chatMessages,
       sendMessage,
     }),
-    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent, categories]
+    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent, categories, subcategories]
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

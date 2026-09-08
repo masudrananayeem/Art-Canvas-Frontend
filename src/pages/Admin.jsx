@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Trash2, Plus, ImagePlus, Loader2, PackageCheck, PackageX, ShoppingBag, Star, Home as HomeIcon, LayoutGrid, Tag } from "lucide-react";
+import { Trash2, Plus, ImagePlus, Loader2, PackageCheck, PackageX, ShoppingBag, Star, Home as HomeIcon, LayoutGrid, Tag, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
-import { GENDERS, SUBCATEGORIES } from "../data/products";
+import { GENDERS } from "../data/products";
 import { useStore } from "../context/StoreContext";
 import { api, uploadAdminImage } from "../lib/api";
 
@@ -17,7 +17,7 @@ const EMPTY_FORM = {
 };
 
 function AddProductForm({ onCreated }) {
-  const { categories } = useStore();
+  const { categories, subcategories } = useStore();
   const [form, setForm] = useState(EMPTY_FORM);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -72,7 +72,7 @@ function AddProductForm({ onCreated }) {
     }
   };
 
-  const clothingSubOptions = form.category === "clothing" && form.gender !== "all" ? SUBCATEGORIES[form.gender] || [] : [];
+  const clothingSubOptions = form.category === "clothing" && form.gender !== "all" ? subcategories[form.gender] || [] : [];
   const isClothing = form.category === "clothing";
 
   return (
@@ -441,6 +441,97 @@ function CategoriesPanel() {
   );
 }
 
+const SUB_GENDERS = [
+  { id: "women", label: "Women" },
+  { id: "men", label: "Men" },
+  { id: "kids", label: "Children" },
+];
+
+function SubcategoriesPanel() {
+  const { subcategories, refreshSubcategories } = useStore();
+  const [detailed, setDetailed] = useState(null); // { women: [{name,builtin}], men: [...], kids: [...] }
+  const [gender, setGender] = useState("women");
+  const [name, setName] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [deletingName, setDeletingName] = useState(null);
+  const [error, setError] = useState(null);
+
+  const load = () => api.getSubcategories().then(setDetailed);
+  useEffect(load, []);
+
+  const add = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setAdding(true);
+    setError(null);
+    try {
+      await api.createSubcategory(gender, name.trim());
+      setName("");
+      await Promise.all([load(), refreshSubcategories()]);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const remove = async (sub) => {
+    if (!confirm(`Delete "${sub.name}" from ${gender}?`)) return;
+    setDeletingName(sub.name);
+    setError(null);
+    try {
+      await api.deleteSubcategory(gender, sub.name);
+      await Promise.all([load(), refreshSubcategories()]);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setDeletingName(null);
+    }
+  };
+
+  const list = detailed?.[gender] || (subcategories[gender] || []).map((n) => ({ name: n, builtin: true }));
+
+  return (
+    <div className="mt-6 max-w-xl space-y-6">
+      <div className="flex gap-2">
+        {SUB_GENDERS.map((g) => (
+          <button key={g.id} onClick={() => setGender(g.id)} className={`px-4 py-1.5 rounded-full text-xs font-semibold uppercase ${gender === g.id ? "bg-black text-white" : "border border-current/15"}`}>
+            {g.label}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={add} className="flex items-end gap-3">
+        <label className="flex flex-col gap-1 text-xs flex-1">
+          <span className="opacity-60">New {SUB_GENDERS.find((g) => g.id === gender)?.label} sub-category</span>
+          <input value={name} onChange={(e) => setName(e.target.value)} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="e.g. Jackets" />
+        </label>
+        <button type="submit" disabled={adding || !name.trim()} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold uppercase bg-black text-white disabled:opacity-50 shrink-0">
+          {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+          {adding ? "Adding…" : "Add"}
+        </button>
+      </form>
+      {error && <p className="text-xs text-[#A8431E]">{error}</p>}
+
+      <div className="space-y-2">
+        {list.map((s) => (
+          <div key={s.name} className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-current/10 text-sm">
+            <span>{s.name}</span>
+            {s.builtin ? (
+              <span className="text-[10px] uppercase tracking-wide opacity-40">Default</span>
+            ) : (
+              <button onClick={() => remove(s)} disabled={deletingName === s.name} className="w-7 h-7 rounded-full flex items-center justify-center border border-current/15 disabled:opacity-50">
+                {deletingName === s.name ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] opacity-45">Default sub-categories can't be removed. One you added can't be deleted while products still use it — move or delete those products first.</p>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { dark, refreshProducts } = useStore();
   const [products, setProducts] = useState([]);
@@ -464,6 +555,7 @@ export default function Admin() {
   const tabs = [
     { id: "products", label: "Products", icon: LayoutGrid },
     { id: "categories", label: "Categories", icon: Tag },
+    { id: "subcategories", label: "Sub-categories", icon: Users },
     { id: "orders", label: "Orders", icon: ShoppingBag },
     { id: "home", label: "Home", icon: HomeIcon },
   ];
@@ -506,6 +598,7 @@ export default function Admin() {
           )}
 
           {tab === "categories" && <CategoriesPanel />}
+          {tab === "subcategories" && <SubcategoriesPanel />}
           {tab === "orders" && <OrdersPanel />}
           {tab === "home" && <HomeContentPanel />}
         </div>

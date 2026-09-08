@@ -3,7 +3,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, Heart, ShoppingBag, Moon, Sun, Menu, ChevronDown, UserRound, ShieldCheck } from "lucide-react";
 import { useStore } from "../context/StoreContext";
-import { SUBCATEGORIES } from "../data/products";
 
 const people = [
   ["Women", "women", "Dresses · Outerwear · Tops"],
@@ -14,7 +13,7 @@ const people = [
 const navClass = ({ isActive }) => `nav-link ${isActive ? "is-active" : ""}`;
 
 export default function Navbar({ onMenu }) {
-  const { dark, setDark, cartCount, wishlist, setCartOpen, isAdmin, user } = useStore();
+  const { dark, setDark, cartCount, wishlist, setCartOpen, isAdmin, user, subcategories } = useStore();
   const [scrolled, setScrolled] = useState(false);
   const [clothingOpen, setClothingOpen] = useState(false);
   const navigate = useNavigate();
@@ -53,7 +52,7 @@ export default function Navbar({ onMenu }) {
                           <small>0{index + 1}</small>
                         </div>
                         <NavLink to={`/shop?category=clothing&gender=${id}`} className="clothing-menu__all">All {label}</NavLink>
-                        {SUBCATEGORIES[id].map((sub) => <button key={sub} onClick={() => shopFor(id, sub)}>{sub}</button>)}
+                        {(subcategories[id] || []).map((sub) => <button key={sub} onClick={() => shopFor(id, sub)}>{sub}</button>)}
                       </div>
                     ))}
                   </motion.div>

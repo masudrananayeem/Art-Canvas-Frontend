@@ -37,6 +37,7 @@ export const api = {
   getProduct: (id) => request(`/api/products/${id}`),
   getSiteContent: () => request("/api/site-content"),
   getCategories: () => request("/api/categories"),
+  getSubcategories: () => request("/api/subcategories"),
 
   // authenticated user
   me: () => request("/api/me", { auth: true }),
@@ -55,6 +56,8 @@ export const api = {
   updateSiteContent: (patch) => request("/api/admin/site-content", { method: "PATCH", body: patch, auth: true }),
   createCategory: (name) => request("/api/admin/categories", { method: "POST", body: { name }, auth: true }),
   deleteCategory: (id) => request(`/api/admin/categories/${id}`, { method: "DELETE", auth: true }),
+  createSubcategory: (gender, name) => request("/api/admin/subcategories", { method: "POST", body: { gender, name }, auth: true }),
+  deleteSubcategory: (gender, name) => request("/api/admin/subcategories", { method: "DELETE", body: { gender, name }, auth: true }),
   allOrders: () => request("/api/admin/orders", { auth: true }),
 };
 

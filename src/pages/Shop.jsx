@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
-import { GENDERS, SUBCATEGORIES, img } from "../data/products";
+import { GENDERS, img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
 const ICONS = { clothing: Shirt, art: Palette, objects: Package, accessories: Gift, gifts: Gift };
 const SORTS = ["Featured", "Price: Low to High", "Price: High to Low", "Top Rated"];
 
 export default function Shop() {
-  const { dark, products, productsLoading, categories } = useStore();
+  const { dark, products, productsLoading, categories, subcategories } = useStore();
   const SHOP_PRODUCTS = products;
   const SHOP_CATEGORIES = categories;
   const MAX_PRICE = useMemo(() => (products.length ? Math.ceil(Math.max(...products.map((p) => p.price))) : 1000), [products]);
@@ -49,7 +49,7 @@ export default function Shop() {
     setParams(next);
   };
 
-  const availableSubs = gender !== "all" ? SUBCATEGORIES[gender] || [] : [];
+  const availableSubs = gender !== "all" ? subcategories[gender] || [] : [];
 
   const filtered = useMemo(() => {
     let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
