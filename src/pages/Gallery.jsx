@@ -13,21 +13,22 @@ export default function Gallery() {
   return (
     <PageTransition>
       <section className="px-6 pt-10 pb-24">
-        <div className="max-w-6xl mx-auto">
-          {/* Editorial image added above the existing gallery cards — card layout remains unchanged. */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55 }}
-            className="mb-10 overflow-hidden rounded-[4px] h-[260px] sm:h-[360px] lg:h-[440px]"
-          >
-            <img
-              src={galleryHero}
-              alt="ArtCanvas fashion editorial"
-              className="w-full h-full object-cover object-center"
-            />
-          </motion.div>
+        {/* Full-bleed editorial banner — breaks out of the page's max-width container to span the entire viewport width. */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55 }}
+          className="relative left-1/2 -translate-x-1/2 w-screen mb-10 overflow-hidden h-[300px] sm:h-[440px] lg:h-[580px]"
+        >
+          <img
+            src={galleryHero}
+            alt="ArtCanvas fashion editorial"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+        </motion.div>
 
+        <div className="max-w-6xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mb-12 max-w-xl">
             <p className="text-xs tracking-[0.25em] uppercase opacity-50 mb-3">The Gallery</p>
             <h1 className="font-display italic text-4xl sm:text-5xl font-black tracking-tight mb-4">Original works, hung the way they were meant to be seen.</h1>
