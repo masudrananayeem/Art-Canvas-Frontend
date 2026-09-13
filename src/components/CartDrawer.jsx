@@ -17,7 +17,7 @@ export default function CartDrawer() {
   return (
     <AnimatePresence>
       {cartOpen && (
-        <motion.div className="fixed inset-0 z-[95]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div className="fixed inset-0 z-[105]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <motion.div className="absolute inset-0 bg-black/50" onClick={() => setCartOpen(false)} />
           <motion.div
             initial={{ x: "100%" }}
