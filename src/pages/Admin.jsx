@@ -456,8 +456,14 @@ function SubcategoriesPanel() {
   const [deletingName, setDeletingName] = useState(null);
   const [error, setError] = useState(null);
 
-  const load = () => api.getSubcategories().then(setDetailed);
-  useEffect(load, []);
+  const load = async () => {
+    const data = await api.getSubcategories();
+    setDetailed(data);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
 
   const add = async (e) => {
     e.preventDefault();
