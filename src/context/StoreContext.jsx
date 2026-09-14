@@ -12,7 +12,7 @@ import { api } from "../lib/api";
 
 const StoreContext = createContext(null);
 
-const EMPTY_SITE_CONTENT = { heroImage: "", heroHeadline: "", heroTagline: "", heroTopLeft: "ARTCANVAS / NEW SEASON", heroTopRight: "DROP 04 — 2026", heroCtaLabel: "Explore the collection", heroCtaLink: "/shop?category=clothing", heroCtaNote: "Designed in small runs.\nMade to be kept.", heroBottomLeft: "01", heroBottomRight: "EST. 2026", filmTitle: "Clothing in motion.", filmDescription: "A moving study of fabric, proportion and everyday gesture.", filmVideoUrl: "", showWhatsNew: true, showFilm: true, showManifesto: true, whatsNewTitle: "What’s new.", whatsNewDescription: "Fresh pieces, new proportions and objects worth noticing." };
+const EMPTY_SITE_CONTENT = { heroImage: "", heroHeadline: "", heroTagline: "", heroTopLeft: "ARTCANVAS / NEW SEASON", heroTopRight: "DROP 04 — 2026", heroCtaLabel: "Explore the collection", heroCtaLink: "/shop?category=clothing", heroCtaNote: "Designed in small runs.\nMade to be kept.", heroBottomLeft: "01", heroBottomRight: "EST. 2026", filmTitle: "Clothing in motion.", filmDescription: "A moving study of fabric, proportion and everyday gesture.", filmVideoUrl: "", showWhatsNew: true, showFilm: true, showManifesto: true, showAnnouncement: false, announcementText: "", featuredTitle: "Currently interesting.", featuredDescription: "", whatsNewTitle: "What’s new.", whatsNewDescription: "Fresh pieces, new proportions and objects worth noticing." };
 
 export function StoreProvider({ children }) {
   const [dark, setDark] = useState(false);

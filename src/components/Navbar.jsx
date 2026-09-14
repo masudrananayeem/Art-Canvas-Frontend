@@ -49,14 +49,16 @@ function SearchOverlay({ open, onClose }) {
   const term = query.trim().toLowerCase();
   const results = term
     ? products
-        .filter((p) => [p.name, p.description, p.category, p.subcategory].filter(Boolean).some((f) => String(f).toLowerCase().includes(term)))
+        .filter((p) => [p.name, p.description, p.category, p.subcategory, p.gender].filter(Boolean).some((f) => String(f).toLowerCase().includes(term)))
         .slice(0, 6)
     : [];
 
   const goToResults = () => {
-    if (!query.trim()) return;
+    const term = query.trim();
+    if (!term) return;
+    setQuery("");
     onClose();
-    navigate(`/shop?search=${encodeURIComponent(query.trim())}`);
+    navigate(`/shop?search=${encodeURIComponent(term)}`, { replace: true });
   };
 
   const goToProduct = (id) => {

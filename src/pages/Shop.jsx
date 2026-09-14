@@ -51,24 +51,35 @@ export default function Shop() {
     else next.set("sub", id);
     setParams(next);
   };
-  const submitSearch = (e) => {
-    e.preventDefault();
-    const value = searchInput.trim();
+  const applySearch = (value) => {
+    const term = value.trim();
     setParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (value) next.set("search", value);
-      else next.delete("search");
+      if (term) {
+        next.set("search", term);
+        // A search should search the whole catalogue instead of silently
+        // remaining trapped inside an old category/gender/price filter.
+        next.delete("category");
+        next.delete("gender");
+        next.delete("sub");
+      } else {
+        next.delete("search");
+      }
       return next;
     }, { replace: true });
   };
-  const clearSearch = () => {
-    setSearchInput("");
-    setParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete("search");
-      return next;
-    }, { replace: true });
-  };
+  const submitSearch = (e) => { e.preventDefault(); applySearch(searchInput); };
+  const clearSearch = () => { setSearchInput(""); applySearch(""); };
+
+  // Live search: results update while typing, but the URL is still the single
+  // source of truth for navigation/back-forward and the clear button.
+  useEffect(() => {
+    const term = searchInput.trim();
+    const current = search.trim();
+    if (term === current) return;
+    const timer = setTimeout(() => applySearch(term), 180);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const availableSubs = gender !== "all" ? subcategories[gender] || [] : [];
 
@@ -81,7 +92,7 @@ export default function Shop() {
     let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
     if (gender !== "all") list = list.filter((p) => p.gender === gender || p.gender === "unisex");
     if (sub !== "all") list = list.filter((p) => p.subcategory === sub);
-    list = list.filter((p) => p.price <= maxPrice);
+    if (!searchTerm) list = list.filter((p) => p.price <= maxPrice);
     if (searchTerm) list = list.filter(matchesSearch);
     list = [...list];
     if (sort === "Price: Low to High") list.sort((a, b) => a.price - b.price);

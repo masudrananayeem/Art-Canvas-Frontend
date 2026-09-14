@@ -148,16 +148,16 @@ function pickCurrentlyInteresting(products, count = 6) {
   return picked.slice(0, count);
 }
 
-function ProductRail({ products }) {
+function ProductRail({ products, siteContent }) {
   const EDIT = pickCurrentlyInteresting(products, 6);
   return (
     <section className="edit-editorial section-shell">
       <Reveal className="section-heading-line">
         <div>
           <p className="section-kicker">04 — THE EDIT</p>
-          <h2>Currently<br /><em>interesting.</em></h2>
+          <h2>{(siteContent?.featuredTitle || "Currently interesting.").split(" ")[0]}<br /><em>{(siteContent?.featuredTitle || "Currently interesting.").split(" ").slice(1).join(" ")}</em></h2>
         </div>
-        <MagneticLink to="/shop" className="text-link">View all pieces <ArrowRight size={15} /></MagneticLink>
+        <div className="text-right"><p className="section-note mb-2">{siteContent?.featuredDescription || ""}</p><MagneticLink to="/shop" className="text-link">View all pieces <ArrowRight size={15} /></MagneticLink></div>
       </Reveal>
       <div className="product-rail">
         {EDIT.map((product, i) => (
@@ -281,5 +281,5 @@ function WearingStory() {
 }
 export default function Home() {
   const { products, siteContent } = useStore();
-  return <PageTransition><main className="home-page"><Hero siteContent={siteContent} /><WearingStory />{siteContent?.showFilm !== false && <FashionFilm siteContent={siteContent} />}{siteContent?.showWhatsNew !== false && <People products={products} siteContent={siteContent} />}<ProductRail products={products} /><section className="manifesto-editorial" style={{ display: siteContent?.showManifesto === false ? "none" : undefined }}><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  return <PageTransition><main className="home-page"><>{siteContent?.showAnnouncement && siteContent?.announcementText && <div className="px-6 py-2 text-center text-[10px] uppercase tracking-[.2em] border-b border-current/10">{siteContent.announcementText}</div>}</><Hero siteContent={siteContent} /><WearingStory />{siteContent?.showFilm !== false && <FashionFilm siteContent={siteContent} />}{siteContent?.showWhatsNew !== false && <People products={products} siteContent={siteContent} />}<ProductRail products={products} siteContent={siteContent} /><section className="manifesto-editorial" style={{ display: siteContent?.showManifesto === false ? "none" : undefined }}><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

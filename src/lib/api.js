@@ -82,6 +82,8 @@ export const api = {
   adminLookupEmail: (email) => request("/api/admin/messages/lookup", { method: "POST", body: { email }, auth: true }),
   adminMessagesFor: (uid) => request(`/api/admin/messages/${uid}`, { auth: true }),
   adminSendMessage: (uid, text) => request(`/api/admin/messages/${uid}`, { method: "POST", body: { text }, auth: true }),
+  adminDeleteMessage: (uid, messageId) => request(`/api/admin/messages/${uid}/${messageId}`, { method: "DELETE", auth: true }),
+  adminDeleteMessageThread: (uid) => request(`/api/admin/messages/${uid}`, { method: "DELETE", auth: true }),
 };
 
 async function uploadToCloudinary(sig, file) {
