@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users } from "lucide-react";
+import { Package, Shirt, Sparkles, Gift, Palette, ChevronDown, X, SlidersHorizontal, ArrowUpRight, Users, Search, ArrowRight } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import ProductCard from "../components/ProductCard";
 import { GENDERS, img } from "../data/products";
@@ -19,6 +19,9 @@ export default function Shop() {
   const active = params.get("category") || "all";
   const gender = params.get("gender") || "all";
   const sub = params.get("sub") || "all";
+  const search = params.get("search") || "";
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => { setSearchInput(search); }, [search]);
   const [sort, setSort] = useState("Featured");
   const [sortOpen, setSortOpen] = useState(false);
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -48,25 +51,64 @@ export default function Shop() {
     else next.set("sub", id);
     setParams(next);
   };
+  const submitSearch = (e) => {
+    e.preventDefault();
+    const value = searchInput.trim();
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) next.set("search", value);
+      else next.delete("search");
+      return next;
+    }, { replace: true });
+  };
+  const clearSearch = () => {
+    setSearchInput("");
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("search");
+      return next;
+    }, { replace: true });
+  };
 
   const availableSubs = gender !== "all" ? subcategories[gender] || [] : [];
+
+  const searchTerm = search.trim().toLowerCase();
+  const matchesSearch = (p) =>
+    !searchTerm ||
+    [p.name, p.description, p.category, p.subcategory, p.gender].filter(Boolean).some((field) => String(field).toLowerCase().includes(searchTerm));
 
   const filtered = useMemo(() => {
     let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
     if (gender !== "all") list = list.filter((p) => p.gender === gender || p.gender === "unisex");
     if (sub !== "all") list = list.filter((p) => p.subcategory === sub);
     list = list.filter((p) => p.price <= maxPrice);
+    if (searchTerm) list = list.filter(matchesSearch);
     list = [...list];
     if (sort === "Price: Low to High") list.sort((a, b) => a.price - b.price);
     if (sort === "Price: High to Low") list.sort((a, b) => b.price - a.price);
     if (sort === "Top Rated") list.sort((a, b) => b.rating - a.rating);
     return list;
-  }, [active, gender, sub, sort, maxPrice]);
+  }, [active, gender, sub, sort, maxPrice, searchTerm, SHOP_PRODUCTS]);
+
+  // With no category, filter or search chosen, showing every product mixed
+  // together in one long grid makes it impossible to tell what's clothing vs
+  // art vs an accessory. In that "browse everything" state we instead group
+  // pieces into their categories, each with its own heading and a link to
+  // see the full category.
+  const isBrowsingEverything = active === "all" && gender === "all" && sub === "all" && !searchTerm && maxPrice >= MAX_PRICE;
+  const groupedByCategory = useMemo(() => {
+    if (!isBrowsingEverything) return [];
+    return SHOP_CATEGORIES.map((cat) => ({
+      ...cat,
+      items: SHOP_PRODUCTS.filter((p) => p.category === cat.id),
+    })).filter((group) => group.items.length > 0);
+  }, [isBrowsingEverything, SHOP_CATEGORIES, SHOP_PRODUCTS]);
+  const CATEGORY_PREVIEW_COUNT = 8;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   useEffect(() => {
     setPage(1);
-  }, [active, gender, sub, sort, maxPrice]);
+  }, [active, gender, sub, sort, maxPrice, searchTerm]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
@@ -79,14 +121,33 @@ export default function Shop() {
   const pageStart = filtered.length ? (page - 1) * ITEMS_PER_PAGE + 1 : 0;
   const pageEnd = Math.min(page * ITEMS_PER_PAGE, filtered.length);
 
-  const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sub !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0);
+  const activeFilterCount = (active !== "all" ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sub !== "all" ? 1 : 0) + (maxPrice < MAX_PRICE ? 1 : 0) + (searchTerm ? 1 : 0);
   const clearFilters = () => {
-    setParams({});
+    setSearchInput("");
     setMaxPrice(MAX_PRICE);
+    setParams({}, { replace: true });
   };
 
   const SidebarContent = (
     <>
+      <div>
+        <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Search</p>
+        <form onSubmit={submitSearch} className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-45" />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search pieces…"
+            className="w-full pl-9 pr-8 py-2 rounded-full border border-current/15 bg-transparent text-sm"
+          />
+          {searchInput && (
+            <button type="button" onClick={clearSearch} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 opacity-45 hover:opacity-100">
+              <X size={13} />
+            </button>
+          )}
+        </form>
+      </div>
+
       <div>
         <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Category</p>
         <div className="space-y-1">
@@ -234,6 +295,20 @@ export default function Shop() {
 
           {/* Mobile filter bar */}
           <div className="md:hidden space-y-3">
+            <form onSubmit={submitSearch} className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-45" />
+              <input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Search pieces…"
+                className="w-full pl-9 pr-8 py-2.5 rounded-full border border-current/15 bg-transparent text-sm"
+              />
+              {searchInput && (
+                <button type="button" onClick={clearSearch} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 opacity-45 hover:opacity-100">
+                  <X size={13} />
+                </button>
+              )}
+            </form>
             <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-6 px-6 no-scrollbar">
               <button
                 onClick={() => setActive("all")}
@@ -319,99 +394,144 @@ export default function Shop() {
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div className="flex items-center gap-3">
-                <p className="text-sm opacity-60">{filtered.length} pieces</p>
+                <p className="text-sm opacity-60">
+                  {isBrowsingEverything ? SHOP_PRODUCTS.length : filtered.length} pieces
+                  {searchTerm && ` · results for "${search}"`}
+                </p>
                 {activeFilterCount > 0 && (
                   <button onClick={clearFilters} className="flex items-center gap-1 text-xs opacity-60 hover:opacity-100 underline underline-offset-4">
                     <X size={11} /> Clear filters
                   </button>
                 )}
               </div>
-              <div className="relative">
-                <button
-                  onClick={() => setSortOpen((s) => !s)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs border ${dark ? "border-white/15" : "border-black/15"}`}
-                >
-                  {sort} <ChevronDown size={12} className={`transition-transform ${sortOpen ? "rotate-180" : ""}`} />
-                </button>
-                <AnimatePresence>
-                  {sortOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      className={`absolute right-0 mt-2 w-48 rounded-xl border shadow-lg overflow-hidden z-10 ${dark ? "bg-[#1c1c1a] border-white/10" : "bg-white border-black/10"}`}
-                    >
-                      {SORTS.map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => { setSort(s); setSortOpen(false); }}
-                          className={`block w-full text-left px-4 py-2 text-xs hover:bg-current/5 ${sort === s ? "font-semibold" : ""}`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              {!isBrowsingEverything && (
+                <div className="relative">
+                  <button
+                    onClick={() => setSortOpen((s) => !s)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs border ${dark ? "border-white/15" : "border-black/15"}`}
+                  >
+                    {sort} <ChevronDown size={12} className={`transition-transform ${sortOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {sortOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        className={`absolute right-0 mt-2 w-48 rounded-xl border shadow-lg overflow-hidden z-10 ${dark ? "bg-[#1c1c1a] border-white/10" : "bg-white border-black/10"}`}
+                      >
+                        {SORTS.map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => { setSort(s); setSortOpen(false); }}
+                            className={`block w-full text-left px-4 py-2 text-xs hover:bg-current/5 ${sort === s ? "font-semibold" : ""}`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active + sort + gender + sub + maxPrice}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: .35 }}
-                className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 items-start"
-              >
-                {paginatedProducts.map((p, i) => (
-                  <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
-                    <ProductCard p={p} size="md" />
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-
-            {filtered.length > 0 && (
-              <nav className="shop-pagination" aria-label="Product pages">
-                <div className="shop-pagination__summary">
-                  Showing {pageStart}–{pageEnd} of {filtered.length} pieces
-                </div>
-                <div className="shop-pagination__controls">
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    aria-label="Previous page"
+            {isBrowsingEverything ? (
+              // Browsing with no category/filter/search chosen: group pieces by
+              // category so it's always obvious which section you're looking at,
+              // instead of one long mixed grid.
+              <div className="space-y-14">
+                {groupedByCategory.map((group) => {
+                  const Icon = ICONS[group.id] || Sparkles;
+                  const showing = group.items.slice(0, CATEGORY_PREVIEW_COUNT);
+                  return (
+                    <div key={group.id}>
+                      <div className="flex items-end justify-between gap-4 mb-5 pb-3 border-b border-current/10">
+                        <div className="flex items-center gap-2">
+                          <Icon size={16} className="opacity-60" />
+                          <h3 className="font-display italic text-xl sm:text-2xl font-bold">{group.name}</h3>
+                          <span className="text-[10px] opacity-45">{group.items.length} piece{group.items.length === 1 ? "" : "s"}</span>
+                        </div>
+                        {group.items.length > CATEGORY_PREVIEW_COUNT && (
+                          <button onClick={() => setActive(group.id)} className="flex items-center gap-1 text-xs opacity-70 hover:opacity-100 underline underline-offset-4 shrink-0">
+                            View all {group.name} <ArrowRight size={12} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-10 items-start">
+                        {showing.map((p, i) => (
+                          <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
+                            <ProductCard p={p} size="md" />
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {groupedByCategory.length === 0 && (
+                  <p className="text-sm opacity-60 mt-10 text-center">{productsLoading ? "Loading pieces…" : "No pieces found yet."}</p>
+                )}
+              </div>
+            ) : (
+              <>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={active + sort + gender + sub + maxPrice + searchTerm}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: .35 }}
+                    className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-5 sm:gap-y-12 items-start"
                   >
-                    Previous
-                  </button>
-                  <div className="shop-pagination__pages">
-                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
+                    {paginatedProducts.map((p, i) => (
+                      <motion.div key={p.id} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .42, delay: Math.min(i * .035, .25) }}>
+                        <ProductCard p={p} size="md" />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+
+                {filtered.length > 0 && (
+                  <nav className="shop-pagination" aria-label="Product pages">
+                    <div className="shop-pagination__summary">
+                      Showing {pageStart}–{pageEnd} of {filtered.length} pieces
+                    </div>
+                    <div className="shop-pagination__controls">
                       <button
                         type="button"
-                        key={number}
-                        onClick={() => setPage(number)}
-                        className={page === number ? "is-active" : ""}
-                        aria-current={page === number ? "page" : undefined}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        aria-label="Previous page"
                       >
-                        {String(number).padStart(2, "0")}
+                        Previous
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    aria-label="Next page"
-                  >
-                    Next
-                  </button>
-                </div>
-              </nav>
-            )}
+                      <div className="shop-pagination__pages">
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
+                          <button
+                            type="button"
+                            key={number}
+                            onClick={() => setPage(number)}
+                            className={page === number ? "is-active" : ""}
+                            aria-current={page === number ? "page" : undefined}
+                          >
+                            {String(number).padStart(2, "0")}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        aria-label="Next page"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </nav>
+                )}
 
-            {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">{productsLoading ? "Loading pieces…" : "No pieces found. Try adjusting your filters."}</p>}
+                {filtered.length === 0 && <p className="text-sm opacity-60 mt-10 text-center">{productsLoading ? "Loading pieces…" : "No pieces found. Try adjusting your filters."}</p>}
+              </>
+            )}
           </div>
         </div>
       </section>

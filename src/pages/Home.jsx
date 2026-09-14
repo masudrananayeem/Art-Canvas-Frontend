@@ -38,6 +38,13 @@ function Hero({ siteContent }) {
   const heroImage = siteContent?.heroImage;
   const heroHeadline = siteContent?.heroHeadline;
   const heroTagline = siteContent?.heroTagline;
+  const topLeft = siteContent?.heroTopLeft || "ARTCANVAS / NEW SEASON";
+  const topRight = siteContent?.heroTopRight || "DROP 04 — 2026";
+  const ctaLabel = siteContent?.heroCtaLabel || "Explore the collection";
+  const ctaLink = siteContent?.heroCtaLink || "/shop?category=clothing";
+  const ctaNote = siteContent?.heroCtaNote || "Designed in small runs.\nMade to be kept.";
+  const bottomLeft = siteContent?.heroBottomLeft || "01";
+  const bottomRight = siteContent?.heroBottomRight || "EST. 2026";
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const titleY = useTransform(scrollYProgress, [0, 1], [0, 90]);
@@ -47,7 +54,7 @@ function Hero({ siteContent }) {
       <motion.img style={{ y: imageY, scale: 1.08 }} src={heroImage || img("ac-hero-new", 1800, 1200)} alt="ArtCanvas latest collection" className="hero-editorial__image" />
       <div className="hero-editorial__shade" />
       <div className="hero-editorial__grid" />
-      <motion.div style={{ opacity }} className="hero-editorial__top"><p>ARTCANVAS / NEW SEASON</p><p>DROP 04 — 2026</p></motion.div>
+      <motion.div style={{ opacity }} className="hero-editorial__top"><p>{topLeft}</p><p>{topRight}</p></motion.div>
       <motion.div style={{ opacity }} className="hero-editorial__side"><span>SCROLL</span><i /><span>01 — 04</span></motion.div>
       <motion.div style={{ y: titleY }} className="hero-editorial__content">
         <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .15 }} className="eyebrow-light">{heroTagline || "A STUDY IN EVERYDAY FORM"}</motion.p>
@@ -57,24 +64,24 @@ function Hero({ siteContent }) {
           <h1><SplitLine delay={.22}>Wear the</SplitLine><SplitLine delay={.34}><em>unfamiliar.</em></SplitLine></h1>
         )}
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .5 }} className="hero-editorial__actions">
-          <MagneticLink to="/shop?category=clothing" className="hero-cta">Explore the collection <ArrowUpRight size={15} /></MagneticLink>
-          <span>Designed in small runs.<br />Made to be kept.</span>
+          <MagneticLink to={ctaLink} className="hero-cta">{ctaLabel} <ArrowUpRight size={15} /></MagneticLink>
+          <span>{ctaNote.split("\n").map((line, i) => <React.Fragment key={i}>{i > 0 && <br />}{line}</React.Fragment>)}</span>
         </motion.div>
       </motion.div>
-      <div className="hero-editorial__bottom"><span>01</span><div className="hero-categories"><Link to="/shop?category=clothing">Clothing</Link><Link to="/gallery">Art</Link><Link to="/shop?category=objects">Objects</Link><Link to="/shop?category=accessories">Accessories</Link></div><span>EST. 2026</span></div>
+      <div className="hero-editorial__bottom"><span>{bottomLeft}</span><div className="hero-categories"><Link to="/shop?category=clothing">Clothing</Link><Link to="/gallery">Art</Link><Link to="/shop?category=objects">Objects</Link><Link to="/shop?category=accessories">Accessories</Link></div><span>{bottomRight}</span></div>
       <motion.div className="hero-scroll-pulse" animate={{ y: [0, 9, 0], opacity: [.35, 1, .35] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} />
     </section>
   );
 }
 
-function People({ products }) {
+function People({ products, siteContent }) {
   const newest = products.slice(0, 10);
   const [active, setActive] = React.useState(0);
   const maxIndex = Math.max(0, newest.length - 4);
   const move = (direction) => setActive((v) => Math.max(0, Math.min(maxIndex, v + direction)));
   return (
     <section className="whats-new section-shell">
-      <Reveal className="section-heading-line whats-new__heading"><div><p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p><h2>What’s<br /><em>new.</em></h2></div><div className="whats-new__intro"><p className="section-note">Fresh pieces, new proportions<br />and objects worth noticing.</p><Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link></div></Reveal>
+      <Reveal className="section-heading-line whats-new__heading"><div><p className="section-kicker">03 — WHAT'S NEW / THE EDIT</p><h2>{(siteContent?.whatsNewTitle || "What’s new.").split(" ")[0]}<br /><em>{(siteContent?.whatsNewTitle || "What’s new.").split(" ").slice(1).join(" ")}</em></h2></div><div className="whats-new__intro"><p className="section-note">{siteContent?.whatsNewDescription || "Fresh pieces, new proportions and objects worth noticing."}</p><Link to="/shop" className="text-link">See everything <ArrowRight size={15} /></Link></div></Reveal>
       <div className="whats-new__carousel">
         <button className="whats-new__arrow" type="button" onClick={() => move(-1)} disabled={!active} aria-label="Previous pieces"><ChevronLeft size={22}/><span>PREV</span></button>
         <div className="whats-new__viewport"><motion.div className="whats-new__track" animate={{ x: `calc(-${active} * (var(--new-card-width) + var(--new-gap)))` }} transition={{type:'spring',stiffness:260,damping:30}}>
@@ -87,19 +94,19 @@ function People({ products }) {
   );
 }
 
-function FashionFilm() {
+function FashionFilm({ siteContent }) {
   return (
     <section className="fashion-film section-shell">
       <div className="fashion-film__head">
         <div>
           <p className="section-kicker">FILM / 2026</p>
-          <h2>Clothing in<br /><em>motion.</em></h2>
+          <h2>{(siteContent?.filmTitle || "Clothing in motion.").split(" ")[0]}<br /><em>{(siteContent?.filmTitle || "Clothing in motion.").split(" ").slice(1).join(" ")}</em></h2>
         </div>
-        <p className="section-note">A moving study of fabric, proportion and everyday gesture.</p>
+        <p className="section-note">{siteContent?.filmDescription || "A moving study of fabric, proportion and everyday gesture."}</p>
       </div>
       <div className="fashion-film__frame">
         <video className="fashion-film__video" autoPlay muted loop playsInline preload="metadata" poster="/brand/artcanvas-logo.png" aria-label="ArtCanvas clothing editorial film">
-          <source src="/clothing-editorial.mp4" type="video/mp4" />
+          <source src={siteContent?.filmVideoUrl || "/clothing-editorial.mp4"} type="video/mp4" />
         </video>
         <div className="fashion-film__overlay"><span>ARTCANVAS / CLOTHING</span><span>00:10 — EDITORIAL STUDY</span></div>
         <div className="fashion-film__center"><span>PLAYING</span><i /></div>
@@ -108,9 +115,41 @@ function FashionFilm() {
   );
 }
 
-function ProductRail({ products }) {
+// What shows in the "Currently interesting" rail, in priority order:
+// 1) pieces the admin has hand-picked as featured,
+// 2) then the best sellers (most units actually bought), to fill any
+//    remaining slots,
+// 3) and only if neither exists yet, a handful of clothing as a fallback.
+function pickCurrentlyInteresting(products, count = 6) {
   const featured = products.filter((p) => p.isFeatured);
-  const EDIT = (featured.length ? featured : products.filter((p) => p.category === "clothing")).slice(0, 6);
+  const picked = [...featured];
+  const pickedIds = new Set(picked.map((p) => p.id));
+
+  if (picked.length < count) {
+    const bestSellers = [...products]
+      .filter((p) => !pickedIds.has(p.id) && (p.sold || 0) > 0)
+      .sort((a, b) => (b.sold || 0) - (a.sold || 0));
+    for (const p of bestSellers) {
+      if (picked.length >= count) break;
+      picked.push(p);
+      pickedIds.add(p.id);
+    }
+  }
+
+  if (picked.length < count) {
+    const fallback = products.filter((p) => !pickedIds.has(p.id) && p.category === "clothing");
+    for (const p of fallback) {
+      if (picked.length >= count) break;
+      picked.push(p);
+      pickedIds.add(p.id);
+    }
+  }
+
+  return picked.slice(0, count);
+}
+
+function ProductRail({ products }) {
+  const EDIT = pickCurrentlyInteresting(products, 6);
   return (
     <section className="edit-editorial section-shell">
       <Reveal className="section-heading-line">
@@ -139,6 +178,11 @@ function ProductRail({ products }) {
                   alt={product.name}
                 />
                 <span>{String(i + 1).padStart(2, "0")}</span>
+                {product.isFeatured ? (
+                  <span className="micro-tag !absolute !top-3 !right-3">Featured</span>
+                ) : product.sold > 0 ? (
+                  <span className="micro-tag !absolute !top-3 !right-3">Best seller</span>
+                ) : null}
                 <button aria-label="Add to wishlist" onClick={(e) => e.preventDefault()}><Plus size={16} /></button>
                 <div className="rail-product__reveal">View piece <ArrowUpRight size={13} /></div>
               </div>
@@ -237,5 +281,5 @@ function WearingStory() {
 }
 export default function Home() {
   const { products, siteContent } = useStore();
-  return <PageTransition><main className="home-page"><Hero siteContent={siteContent} /><WearingStory /><FashionFilm /><People products={products} /><ProductRail products={products} /><section className="manifesto-editorial"><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  return <PageTransition><main className="home-page"><Hero siteContent={siteContent} /><WearingStory />{siteContent?.showFilm !== false && <FashionFilm siteContent={siteContent} />}{siteContent?.showWhatsNew !== false && <People products={products} siteContent={siteContent} />}<ProductRail products={products} /><section className="manifesto-editorial" style={{ display: siteContent?.showManifesto === false ? "none" : undefined }}><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

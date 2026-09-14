@@ -12,7 +12,7 @@ import { api } from "../lib/api";
 
 const StoreContext = createContext(null);
 
-const EMPTY_SITE_CONTENT = { heroImage: "", heroHeadline: "", heroTagline: "" };
+const EMPTY_SITE_CONTENT = { heroImage: "", heroHeadline: "", heroTagline: "", heroTopLeft: "ARTCANVAS / NEW SEASON", heroTopRight: "DROP 04 — 2026", heroCtaLabel: "Explore the collection", heroCtaLink: "/shop?category=clothing", heroCtaNote: "Designed in small runs.\nMade to be kept.", heroBottomLeft: "01", heroBottomRight: "EST. 2026", filmTitle: "Clothing in motion.", filmDescription: "A moving study of fabric, proportion and everyday gesture.", filmVideoUrl: "", showWhatsNew: true, showFilm: true, showManifesto: true, whatsNewTitle: "What’s new.", whatsNewDescription: "Fresh pieces, new proportions and objects worth noticing." };
 
 export function StoreProvider({ children }) {
   const [dark, setDark] = useState(false);
@@ -20,6 +20,8 @@ export function StoreProvider({ children }) {
   const [wishlist, setWishlist] = useState(new Set());
   const [cartOpen, setCartOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState(null);
 
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -173,14 +175,51 @@ export function StoreProvider({ children }) {
 
   const signOut = () => firebaseSignOut(auth);
 
-  const sendMessage = (text) => {
+  // Real messaging, backed by the /api/messages endpoints. The client's whole
+  // conversation with the studio lives in Firestore, keyed by their uid, so
+  // an admin can find and reply to it from the Messages tab.
+  const refreshMessages = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+      const list = await api.myMessages();
+      setChatMessages(Array.isArray(list) ? list : []);
+      setChatError(null);
+    } catch (e) {
+      // Do not make a temporary Firestore quota/rate-limit error look like a
+      // broken chat. The next refresh will retry automatically.
+      const message = String(e?.message || "");
+      if (/429|quota exceeded|resource_exhausted/i.test(message)) {
+        setChatError("Messages are temporarily rate-limited. Please try again in a moment.");
+      } else {
+        setChatError(message || "Could not load messages.");
+      }
+    }
+  }, []);
+
+  const sendMessage = async (text) => {
     if (!user || !text) return;
-    setChatMessages((m) => [...m, { from: "user", text }]);
-    setTimeout(
-      () => setChatMessages((m) => [...m, { from: "studio", text: "Thanks for reaching out — the ArtCanvas studio will reply here shortly." }]),
-      700
-    );
+    setChatError(null);
+    // Optimistic bubble so the studio chat feels instant.
+    const optimistic = { from: "user", text, createdAt: new Date().toISOString(), _pending: true };
+    setChatMessages((m) => [...m, optimistic]);
+    try {
+      await api.sendMessage(text);
+      await refreshMessages();
+    } catch (e) {
+      setChatError(e.message || "Could not send your message. Please try again.");
+      setChatMessages((m) => m.filter((msg) => msg !== optimistic));
+    }
   };
+
+  // Messages are intentionally loaded only when the chat is opened.
+  // Continuous background polling can exhaust Firestore read/query quota and
+  // cause a cascade of 429 errors. ChatWidget performs the on-demand refresh.
+  useEffect(() => {
+    if (!user) {
+      setChatMessages([]);
+      setChatError(null);
+    }
+  }, [user]);
 
   const addToBag = (product, qty = 1) => {
     if (product.inStock === false) return;
@@ -260,9 +299,12 @@ export function StoreProvider({ children }) {
       refreshMyProfile,
 
       chatMessages,
+      chatLoading,
+      chatError,
       sendMessage,
+      refreshMessages,
     }),
-    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, products, productsLoading, siteContent, categories, subcategories]
+    [dark, cart, wishlist, cartOpen, user, isAdmin, authLoading, authError, chatMessages, chatLoading, chatError, products, productsLoading, siteContent, categories, subcategories]
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

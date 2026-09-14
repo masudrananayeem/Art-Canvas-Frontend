@@ -12,11 +12,16 @@ async function request(path, { method = "GET", body, auth: needsAuth = false } =
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) {
+    throw new Error(`Failed to fetch ${API_BASE}. Make sure the backend is running on port 8787 and VITE_API_BASE_URL is correct.`);
+  }
 
   let data = null;
   try {
@@ -26,7 +31,9 @@ async function request(path, { method = "GET", body, auth: needsAuth = false } =
   }
 
   if (!res.ok) {
-    throw new Error(data?.error || `Request failed (${res.status})`);
+    const message = data?.error || `Request failed (${res.status})`;
+    if (res.status === 429) throw new Error(`429: ${message}`);
+    throw new Error(message);
   }
   return data;
 }
@@ -47,6 +54,10 @@ export const api = {
   myOrders: () => request("/api/orders/me", { auth: true }),
   profileCloudinarySignature: () => request("/api/cloudinary-signature", { method: "POST", auth: true }),
 
+  // messages (client <-> studio)
+  sendMessage: (text) => request("/api/messages", { method: "POST", body: { text }, auth: true }),
+  myMessages: () => request("/api/messages/me", { auth: true }),
+
   // admin
   adminProducts: () => request("/api/admin/products", { auth: true }),
   createProduct: (product) => request("/api/admin/products", { method: "POST", body: product, auth: true }),
@@ -54,11 +65,23 @@ export const api = {
   deleteProduct: (id) => request(`/api/admin/products/${id}`, { method: "DELETE", auth: true }),
   adminCloudinarySignature: (context = "product") => request("/api/admin/cloudinary-signature", { method: "POST", body: { context }, auth: true }),
   updateSiteContent: (patch) => request("/api/admin/site-content", { method: "PATCH", body: patch, auth: true }),
+  adminCategories: () => request("/api/admin/categories", { auth: true }),
+  adminSubcategories: () => request("/api/admin/subcategories", { auth: true }),
   createCategory: (name) => request("/api/admin/categories", { method: "POST", body: { name }, auth: true }),
+  updateCategory: (id, name) => request(`/api/admin/categories/${id}`, { method: "PATCH", body: { name }, auth: true }),
   deleteCategory: (id) => request(`/api/admin/categories/${id}`, { method: "DELETE", auth: true }),
   createSubcategory: (gender, name) => request("/api/admin/subcategories", { method: "POST", body: { gender, name }, auth: true }),
+  updateSubcategory: (gender, oldName, name) => request("/api/admin/subcategories", { method: "PATCH", body: { gender, oldName, name }, auth: true }),
   deleteSubcategory: (gender, name) => request("/api/admin/subcategories", { method: "DELETE", body: { gender, name }, auth: true }),
   allOrders: () => request("/api/admin/orders", { auth: true }),
+  updateOrderStatus: (id, status) => request(`/api/admin/orders/${id}`, { method: "PATCH", body: { status }, auth: true }),
+  deleteOrder: (id) => request(`/api/admin/orders/${id}`, { method: "DELETE", auth: true }),
+
+  // admin messages
+  adminMessageThreads: () => request("/api/admin/messages/threads", { auth: true }),
+  adminLookupEmail: (email) => request("/api/admin/messages/lookup", { method: "POST", body: { email }, auth: true }),
+  adminMessagesFor: (uid) => request(`/api/admin/messages/${uid}`, { auth: true }),
+  adminSendMessage: (uid, text) => request(`/api/admin/messages/${uid}`, { method: "POST", body: { text }, auth: true }),
 };
 
 async function uploadToCloudinary(sig, file) {
