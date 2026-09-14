@@ -149,6 +149,7 @@ function pickCurrentlyInteresting(products, count = 6) {
 }
 
 function ProductRail({ products, siteContent }) {
+  const { addToBag } = useStore();
   const EDIT = pickCurrentlyInteresting(products, 6);
   return (
     <section className="edit-editorial section-shell">
@@ -183,7 +184,7 @@ function ProductRail({ products, siteContent }) {
                 ) : product.sold > 0 ? (
                   <span className="micro-tag !absolute !top-3 !right-3">Best seller</span>
                 ) : null}
-                <button aria-label="Add to wishlist" onClick={(e) => e.preventDefault()}><Plus size={16} /></button>
+                <button aria-label="Add to bag" disabled={product.inStock === false} onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (product.inStock !== false) addToBag(product); }}><Plus size={16} /></button>
                 <div className="rail-product__reveal">View piece <ArrowUpRight size={13} /></div>
               </div>
               <div className="rail-product__meta">
@@ -281,5 +282,5 @@ function WearingStory() {
 }
 export default function Home() {
   const { products, siteContent } = useStore();
-  return <PageTransition><main className="home-page"><>{siteContent?.showAnnouncement && siteContent?.announcementText && <div className="px-6 py-2 text-center text-[10px] uppercase tracking-[.2em] border-b border-current/10">{siteContent.announcementText}</div>}</><Hero siteContent={siteContent} /><WearingStory />{siteContent?.showFilm !== false && <FashionFilm siteContent={siteContent} />}{siteContent?.showWhatsNew !== false && <People products={products} siteContent={siteContent} />}<ProductRail products={products} siteContent={siteContent} /><section className="manifesto-editorial" style={{ display: siteContent?.showManifesto === false ? "none" : undefined }}><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
+  return <PageTransition><main className="home-page"><>{siteContent?.showAnnouncement && siteContent?.announcementText && <div className="px-6 py-2 text-center text-[10px] uppercase tracking-[.2em] border-b border-current/10">{siteContent.announcementText}</div>}</><Hero siteContent={siteContent} /><WearingStory />{siteContent?.showFilm !== false && <FashionFilm siteContent={siteContent} />}{siteContent?.showWhatsNew !== false && <People products={products} siteContent={siteContent} />}<ProductRail products={products} siteContent={siteContent} /><section className="manifesto-editorial" style={{ display: siteContent?.showManifesto === false ? "none" : undefined }}><motion.img initial={{ scale: 1.08 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ duration: 1.2 }} src={siteContent?.manifestoImage || img("ac-side-studio", 1800, 1050)} alt="ArtCanvas studio" /><div className="manifesto-editorial__shade" /><motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .3 }} transition={{ duration: .8 }} className="manifesto-editorial__content"><p className="section-kicker light">05 — THE STUDIO</p><h2>Objects with<br /><em>a pulse.</em></h2><p>Small runs. Strong materials. A little friction between the familiar and the new.</p><MagneticLink to="/gallery" className="manifesto-link">Enter the visual archive <ArrowUpRight size={15} /></MagneticLink></motion.div></section></main></PageTransition>;
 }

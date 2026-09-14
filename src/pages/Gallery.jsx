@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 import PageTransition from "../components/PageTransition";
-import galleryHero from "../assets/clothing/women-outerwear.jpg";
+import galleryHero from "../assets/clothing/gallery.jpg";
 
 export default function Gallery() {
   const { dark, products } = useStore();

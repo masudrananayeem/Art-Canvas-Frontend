@@ -9,30 +9,60 @@ const EMPTY_FORM = { name:"", description:"", price:"", category:"clothing", gen
 function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
   const { categories, subcategories } = useStore();
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(initial.image || "");
+  const initialImages = Array.isArray(initial.images) && initial.images.length ? initial.images : (initial.image ? [initial.image] : []);
+  const initialPublicIds = Array.isArray(initial.imagePublicIds) && initial.imagePublicIds.length ? initial.imagePublicIds : (initial.imagePublicId ? [initial.imagePublicId] : []);
+  const [existingImages, setExistingImages] = useState(initialImages);
+  const [existingPublicIds, setExistingPublicIds] = useState(initialPublicIds);
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
   const isClothing = form.category === "clothing";
   const subOptions = isClothing && form.gender !== "all" ? (subcategories[form.gender] || []) : [];
 
-  const pickImage = (e) => {
-    const next = e.target.files?.[0]; if (!next) return;
-    if (!next.type.startsWith("image/")) return setError("Please choose an image file.");
-    if (next.size > 8 * 1024 * 1024) return setError("Image is larger than 8MB.");
-    setError(""); setFile(next); setPreview(URL.createObjectURL(next));
+  const pickImages = (e) => {
+    const selected = Array.from(e.target.files || []);
+    if (!selected.length) return;
+    if (selected.length + existingImages.length + files.length > 8) return setError("You can keep up to 8 product photos.");
+    const invalid = selected.find((f) => !f.type.startsWith("image/"));
+    if (invalid) return setError("Please choose image files only.");
+    const oversized = selected.find((f) => f.size > 8 * 1024 * 1024);
+    if (oversized) return setError("Each image must be 8MB or smaller.");
+    setError("");
+    setFiles((current) => [...current, ...selected]);
+    setPreviews((current) => [...current, ...selected.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  };
+
+  const removePhoto = (index) => {
+    if (index < existingImages.length) {
+      setExistingImages((current) => current.filter((_, i) => i !== index));
+      setExistingPublicIds((current) => current.filter((_, i) => i !== index));
+      return;
+    }
+    const fileIndex = index - existingImages.length;
+    setFiles((current) => current.filter((_, i) => i !== fileIndex));
+    setPreviews((current) => current.filter((_, i) => i !== fileIndex));
   };
 
   const submit = async (e) => {
     e.preventDefault(); setSaving(true); setError("");
     try {
-      let image = form.image || ""; let imagePublicId = form.imagePublicId || "";
-      if (file) { const uploaded = await uploadAdminImage(file, "product"); image = uploaded.url; imagePublicId = uploaded.publicId; }
+      let images = existingImages.slice(0, 8);
+      let imagePublicIds = existingPublicIds.slice(0, 8);
+      if (files.length) {
+        const uploaded = [];
+        for (const file of files) uploaded.push(await uploadAdminImage(file, "product"));
+        images = [...images, ...uploaded.map((item) => item.url)].slice(0, 8);
+        imagePublicIds = [...imagePublicIds, ...uploaded.map((item) => item.publicId)].slice(0, 8);
+      }
+      const image = images[0] || "";
+      const imagePublicId = imagePublicIds[0] || "";
       const payload = {
         name: form.name.trim(), description: form.description.trim(), price: Number(form.price), category: form.category,
         gender: isClothing ? form.gender : "all", subcategory: form.subcategory.trim(), stock: Number(form.stock) || 0,
-        image, imagePublicId, isFeatured: !!form.isFeatured,
+        image, imagePublicId, images, imagePublicIds, isFeatured: !!form.isFeatured,
       };
       if (!payload.name || !Number.isFinite(payload.price)) throw new Error("Name and price are required.");
       if (productId) await api.updateProduct(productId, payload); else await api.createProduct(payload);
@@ -51,7 +81,17 @@ function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
       {!isClothing && <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Subcategory / style</span><input value={form.subcategory ?? ""} onChange={set("subcategory")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="e.g. Ceramics, Print, Sculpture"/></label>}
     </div>
     <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Description</span><textarea value={form.description ?? ""} onChange={set("description")} rows={4} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="Short product description"/></label>
-    <div className="flex flex-wrap items-center justify-between gap-4"><label className="flex items-center gap-3 text-xs"><span className="opacity-60">Image</span>{preview ? <img src={preview} alt="" className="w-14 h-14 rounded-lg object-cover"/> : <span className="w-14 h-14 rounded-lg border border-dashed border-current/25 flex items-center justify-center opacity-40"><ImagePlus size={18}/></span>}<input type="file" accept="image/*" onChange={pickImage} className="text-xs"/></label><label className="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={!!form.isFeatured} onChange={set("isFeatured")}/><Star size={13}/> Feature on homepage</label></div>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <label className="flex flex-col gap-2 text-xs">
+          <span className="opacity-60">Product photos <b className="font-normal opacity-70">(up to 8 angles)</b></span>
+          <input type="file" accept="image/*" multiple onChange={pickImages} className="text-xs"/>
+        </label>
+        <label className="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" checked={!!form.isFeatured} onChange={set("isFeatured")}/><Star size={13}/> Feature on homepage</label>
+      </div>
+      {(existingImages.length + previews.length) > 0 && <div className="flex flex-wrap gap-2">{[...existingImages, ...previews].map((src, i) => <div key={`${src}-${i}`} className="relative group"><img src={src} alt={`Product angle ${i + 1}`} className="w-16 h-16 rounded-lg object-cover border border-current/10"/><span className="absolute left-1 bottom-1 rounded bg-black/70 px-1.5 py-0.5 text-[8px] text-white">{i + 1}</span><button type="button" onClick={() => removePhoto(i)} className="absolute -right-1.5 -top-1.5 w-5 h-5 rounded-full bg-white text-black shadow text-[11px]">×</button></div>)}</div>}
+      <p className="text-[10px] opacity-45">The first photo is the main product image. The rest are shown as alternate angles on the product page.</p>
+    </div>
     {error && <p className="text-xs text-[#A8431E]">{error}</p>}
     <div className="flex gap-2"><button disabled={saving} className="px-5 py-2.5 rounded-full text-xs font-semibold uppercase bg-black text-white disabled:opacity-50">{saving ? "Saving…" : productId ? "Save changes" : "Add product"}</button>{onCancel && <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-full text-xs font-semibold uppercase border border-current/15">Cancel</button>}</div>
   </form>;
