@@ -252,7 +252,13 @@ export function StoreProvider({ children }) {
     );
     setCart([]);
     setCartOpen(false);
-    refreshProducts();
+    // Keep the customer's latest delivery details in their profile for the next order.
+    updateMyProfile({
+      name: shipping.fullName,
+      phone: shipping.phone,
+      address: { ...shipping },
+    }).catch(() => {});
+    await refreshProducts();
     return order;
   };
 

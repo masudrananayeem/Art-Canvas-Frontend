@@ -71,22 +71,20 @@ export default function Shop() {
   const submitSearch = (e) => { e.preventDefault(); applySearch(searchInput); };
   const clearSearch = () => { setSearchInput(""); applySearch(""); };
 
-  // Live search: results update while typing, but the URL is still the single
-  // source of truth for navigation/back-forward and the clear button.
-  useEffect(() => {
-    const term = searchInput.trim();
-    const current = search.trim();
-    if (term === current) return;
-    const timer = setTimeout(() => applySearch(term), 180);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
 
   const availableSubs = gender !== "all" ? subcategories[gender] || [] : [];
 
   const searchTerm = search.trim().toLowerCase();
-  const matchesSearch = (p) =>
-    !searchTerm ||
-    [p.name, p.description, p.category, p.subcategory, p.gender].filter(Boolean).some((field) => String(field).toLowerCase().includes(searchTerm));
+  const searchWords = searchTerm.split(/\s+/).filter(Boolean);
+  const matchesSearch = (p) => {
+    if (!searchWords.length) return true;
+    const haystack = [p.id, p.name, p.description, p.category, p.subcategory, p.gender, p.material, p.story, p.seed]
+      .filter((field) => field !== undefined && field !== null)
+      .map(String)
+      .join(" ")
+      .toLowerCase();
+    return searchWords.every((word) => haystack.includes(word));
+  };
 
   const filtered = useMemo(() => {
     let list = active === "all" ? SHOP_PRODUCTS : active === "new" ? [...SHOP_PRODUCTS].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 8) : SHOP_PRODUCTS.filter((p) => p.category === active);
@@ -143,7 +141,7 @@ export default function Shop() {
     <>
       <div>
         <p className="text-xs tracking-widest uppercase opacity-50 mb-3">Search</p>
-        <form onSubmit={submitSearch} className="relative">
+        <form onSubmit={submitSearch} className="relative flex items-center">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-45" />
           <input
             value={searchInput}

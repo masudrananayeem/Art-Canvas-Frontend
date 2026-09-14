@@ -34,7 +34,7 @@ export default function App() {
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <AnimatePresence mode="wait">
-        <Routes location={location} key={`${location.pathname}${location.search}`}>
+        <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetail />} />

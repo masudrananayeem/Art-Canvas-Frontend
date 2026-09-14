@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, Heart, ShoppingBag, Moon, Sun, Menu, ChevronDown, UserRound, ShieldCheck, X, ArrowRight } from "lucide-react";
@@ -14,51 +15,61 @@ const people = [
 const navClass = ({ isActive }) => `nav-link ${isActive ? "is-active" : ""}`;
 
 function SearchOverlay({ open, onClose }) {
-  const { products } = useStore();
+  const { products, productsLoading } = useStore();
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const clearSearchAndClose = () => {
-    setQuery("");
-    if (location.pathname === "/shop") {
-      const next = new URLSearchParams(location.search);
-      next.delete("search");
-      navigate({ pathname: "/shop", search: next.toString() ? `?${next.toString()}` : "" }, { replace: true });
-    }
-    onClose();
-  };
-
-  useEffect(() => {
-    if (open) {
-      setQuery("");
-      // Wait a tick for the panel to mount before focusing.
-      const id = setTimeout(() => inputRef.current?.focus(), 30);
-      return () => clearTimeout(id);
-    }
-  }, [open]);
-
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const id = window.setTimeout(() => inputRef.current?.focus(), 40);
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open, onClose]);
 
-  const term = query.trim().toLowerCase();
-  const results = term
-    ? products
-        .filter((p) => [p.name, p.description, p.category, p.subcategory, p.gender].filter(Boolean).some((f) => String(f).toLowerCase().includes(term)))
-        .slice(0, 6)
+  const normalized = query.trim().toLowerCase();
+  const terms = normalized.split(/\s+/).filter(Boolean);
+  const searchable = (p) => [
+    p.id,
+    p.name,
+    p.description,
+    p.category,
+    p.subcategory,
+    p.gender,
+    p.material,
+    p.story,
+    p.seed,
+  ].filter((v) => v !== undefined && v !== null).map(String).join(" ").toLowerCase();
+
+  const results = terms.length
+    ? products.filter((p) => {
+        const haystack = searchable(p);
+        return terms.every((term) => haystack.includes(term));
+      }).slice(0, 8)
     : [];
+
+  const clearInput = () => {
+    setQuery("");
+    inputRef.current?.focus();
+  };
+
+  const close = () => {
+    setQuery("");
+    onClose();
+  };
 
   const goToResults = () => {
     const term = query.trim();
     if (!term) return;
-    setQuery("");
     onClose();
-    navigate(`/shop?search=${encodeURIComponent(term)}`, { replace: true });
+    navigate(`/shop?search=${encodeURIComponent(term)}`, { replace: location.pathname === "/shop" });
   };
 
   const goToProduct = (id) => {
@@ -66,68 +77,74 @@ function SearchOverlay({ open, onClose }) {
     navigate(`/product/${id}`);
   };
 
-  return (
+  if (!open) return null;
+
+  const overlay = (
     <AnimatePresence>
-      {open && (
-        <motion.div className="fixed inset-0 z-[130]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <motion.div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={onClose} />
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative mx-auto mt-[10vh] w-[min(560px,calc(100vw-32px))] rounded-2xl border border-black/10 bg-white text-[#141413] shadow-2xl overflow-hidden"
-          >
-            <form
-              onSubmit={(e) => { e.preventDefault(); goToResults(); }}
-              className="flex items-center gap-3 px-5 py-4 border-b border-black/10"
-            >
-              <Search size={17} className="opacity-50 shrink-0" />
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search clothing, art, objects…"
-                className="flex-1 min-w-0 outline-0 bg-transparent text-sm"
-              />
-              <button type="button" onClick={clearSearchAndClose} aria-label="Clear search" title="Clear search" className="opacity-50 hover:opacity-100 shrink-0">
+      <motion.div className="fixed inset-0 z-[9999]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ pointerEvents: "auto" }}>
+        <button type="button" aria-label="Close search" className="absolute inset-0 w-full h-full bg-black/45 backdrop-blur-sm cursor-default" onClick={close} />
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mx-auto mt-[10vh] w-[min(560px,calc(100vw-32px))] rounded-2xl border border-black/10 bg-white text-[#141413] shadow-2xl overflow-hidden"
+        >
+          <form onSubmit={(e) => { e.preventDefault(); goToResults(); }} className="flex items-center gap-3 px-5 py-4 border-b border-black/10">
+            <Search size={17} className="opacity-50 shrink-0" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search clothing, art, objects…"
+              autoComplete="off"
+              className="flex-1 min-w-0 outline-0 bg-transparent text-sm"
+            />
+            {query && (
+              <button type="button" onClick={clearInput} aria-label="Clear search text" title="Clear text" className="opacity-50 hover:opacity-100 shrink-0">
                 <X size={17} />
               </button>
-            </form>
-
-            {term && (
-              <div className="max-h-[55vh] overflow-y-auto">
-                {results.length === 0 ? (
-                  <p className="px-5 py-8 text-center text-sm opacity-55">No pieces match "{query.trim()}".</p>
-                ) : (
-                  <>
-                    {results.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => goToProduct(p.id)}
-                        className="w-full flex items-center gap-3 px-5 py-3 hover:bg-black/[.04] text-left transition"
-                      >
-                        <img src={p.image || img(p.seed, 100, 130)} alt="" className="w-10 h-12 object-cover rounded-md shrink-0" />
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-sm font-medium truncate">{p.name}</span>
-                          <span className="block text-[11px] opacity-50 capitalize">{p.category === "clothing" ? p.gender : p.category}{p.subcategory ? ` · ${p.subcategory}` : ""}</span>
-                        </span>
-                        <span className="font-mono text-xs opacity-70 shrink-0">${Number(p.price).toFixed(2)}</span>
-                      </button>
-                    ))}
-                    <button onClick={goToResults} className="w-full flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-semibold uppercase tracking-wider border-t border-black/10 hover:bg-black/[.04] transition">
-                      See all results for "{query.trim()}" <ArrowRight size={13} />
-                    </button>
-                  </>
-                )}
-              </div>
             )}
-            {!term && <p className="px-5 py-8 text-center text-xs opacity-45">Start typing to search the collection.</p>}
-          </motion.div>
+            <button type="button" onClick={close} aria-label="Close search" title="Close search" className="w-8 h-8 rounded-full border border-black/10 flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/5 shrink-0">
+              <X size={16} />
+            </button>
+          </form>
+
+          {normalized && (
+            <div className="max-h-[55vh] overflow-y-auto">
+              {productsLoading ? (
+                <p className="px-5 py-8 text-center text-sm opacity-55">Loading pieces…</p>
+              ) : results.length === 0 ? (
+                <div className="px-5 py-8 text-center">
+                  <p className="text-sm opacity-70">No pieces match “{query.trim()}”.</p>
+                  <button type="button" onClick={goToResults} className="mt-4 text-xs font-semibold uppercase tracking-wider underline underline-offset-4">Open full search</button>
+                </div>
+              ) : (
+                <>
+                  {results.map((p) => (
+                    <button type="button" key={p.id} onClick={() => goToProduct(p.id)} className="w-full flex items-center gap-3 px-5 py-3 hover:bg-black/[.04] text-left transition">
+                      <img src={p.image || img(p.seed || p.id, 100, 130)} alt="" className="w-10 h-12 object-cover rounded-md shrink-0" />
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium truncate">{p.name}</span>
+                        <span className="block text-[11px] opacity-50 capitalize">{p.category === "clothing" ? p.gender : p.category}{p.subcategory ? ` · ${p.subcategory}` : ""}</span>
+                      </span>
+                      <span className="font-mono text-xs opacity-70 shrink-0">${Number(p.price || 0).toFixed(2)}</span>
+                    </button>
+                  ))}
+                  <button type="button" onClick={goToResults} className="w-full flex items-center justify-center gap-2 px-5 py-3.5 text-xs font-semibold uppercase tracking-wider border-t border-black/10 hover:bg-black/[.04] transition">
+                    See all results for “{query.trim()}” <ArrowRight size={13} />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          {!normalized && <p className="px-5 py-8 text-center text-xs opacity-45">Start typing to search the collection.</p>}
         </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
+
+  return typeof document !== "undefined" ? createPortal(overlay, document.body) : null;
 }
 
 export default function Navbar({ onMenu }) {

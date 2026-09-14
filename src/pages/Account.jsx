@@ -6,55 +6,205 @@ import PageTransition from "../components/PageTransition";
 import { useStore } from "../context/StoreContext";
 import { api, uploadProfileImage } from "../lib/api";
 
+const ORDER_STEPS = ["placed", "confirmed", "processing", "shipped", "delivered"];
+
+function OrderCard({ o, compact = false }) {
+  const [expanded, setExpanded] = useState(false);
+  const currentIndex = ORDER_STEPS.indexOf(o.status);
+  const cancelled = o.status === "cancelled";
+  const history = Array.isArray(o.statusHistory) && o.statusHistory.length
+    ? o.statusHistory
+    : [{ status: o.status, at: o.createdAt }];
+  const itemCount = (o.items || []).reduce((sum, item) => sum + Number(item?.qty || 0), 0);
+
+  return (
+    <article className={`account-order-card ${expanded ? "is-expanded" : ""} ${compact ? "account-order-card--compact" : ""}`}>
+      <button
+        type="button"
+        className="account-order-summary"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        <div className="account-order-thumb-stack">
+          {(o.items || []).slice(0, 3).map((it, i) => (
+            <img key={`${o.id}-thumb-${i}`} src={it?.image || "https://picsum.photos/seed/" + (it?.seed || i) + "/80/80"} alt="" />
+          ))}
+        </div>
+        <div className="account-order-summary-main">
+          <div className="flex items-center gap-2 flex-wrap">
+            <strong>Order #{String(o.id).slice(-8)}</strong>
+            <span className={`account-status account-status--${o.status || "placed"}`}>{o.status || "placed"}</span>
+          </div>
+          <p>{itemCount} item{itemCount !== 1 ? "s" : ""} · {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}</p>
+        </div>
+        <div className="account-order-summary-total">
+          <strong>${Number(o.total || 0).toFixed(2)}</strong>
+          <span>{expanded ? "Hide details" : compact ? "View order" : "Track order"}</span>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="account-order-details">
+          {!compact && (
+            <div className="account-tracking-block">
+              <div className="account-detail-heading">
+                <div>
+                  <p className="section-kicker">TRACK ORDER</p>
+                  <h4>{cancelled ? "Order cancelled" : `Currently ${o.status || "placed"}`}</h4>
+                </div>
+                <span className="text-[10px] opacity-45">{o.createdAt ? new Date(o.createdAt).toLocaleString() : "—"}</span>
+              </div>
+
+              {!cancelled ? (
+                <div className="account-tracker">
+                  {ORDER_STEPS.map((step, i) => {
+                    const reached = currentIndex >= i;
+                    return (
+                      <div key={step} className={`account-tracker-step ${reached ? "reached" : ""}`}>
+                        <div className="account-tracker-dot" />
+                        <span>{step}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-[#A8431E] mt-3">This order was cancelled.</p>
+              )}
+            </div>
+          )}
+
+          <div className="account-detail-grid">
+            <div className="account-detail-card">
+              <p className="account-detail-label">ITEMS</p>
+              <div className="space-y-2 mt-3">
+                {(o.items || []).map((it, i) => (
+                  <div key={`${o.id}-${i}`} className="flex items-center justify-between gap-3 text-xs">
+                    <span className="opacity-75">{it?.name || "Item"} × {it?.qty || 0}</span>
+                    <span className="font-mono">${(Number(it?.price || 0) * Number(it?.qty || 0)).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="account-detail-card">
+              <p className="account-detail-label">DELIVERY</p>
+              <div className="mt-3 text-xs leading-5">
+                <p className="opacity-80">{o.shipping?.fullName || "—"}</p>
+                <p className="opacity-55">{o.shipping?.line1 || ""}{o.shipping?.line2 ? `, ${o.shipping.line2}` : ""}</p>
+                <p className="opacity-55">{[o.shipping?.city, o.shipping?.state, o.shipping?.zip, o.shipping?.country].filter(Boolean).join(", ")}</p>
+                <p className="opacity-55">{o.shipping?.phone || ""}</p>
+              </div>
+            </div>
+
+            <div className="account-detail-card">
+              <p className="account-detail-label">PAYMENT</p>
+              <div className="mt-3 text-xs leading-5">
+                <p className="capitalize opacity-75">{o.paymentMethod === "cod" ? "Cash on delivery" : o.paymentMethod || "—"}</p>
+                {o.paymentRef && <p className="opacity-55 break-all">Transaction: {o.paymentRef}</p>}
+                <p className="font-semibold font-mono mt-1">Total ${Number(o.total || 0).toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+
+          <details className="account-status-history">
+            <summary>Status history</summary>
+            <div className="mt-3 space-y-2">
+              {history.map((h, i) => (
+                <div key={`${h.status}-${i}`} className="flex justify-between gap-3 text-xs">
+                  <span className="capitalize">{h.status}</span>
+                  <span className="opacity-50">{h.at ? new Date(h.at).toLocaleString() : "—"}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
+      )}
+    </article>
+  );
+}
+
 function OrderHistory() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.myOrders();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e.message || "Could not load your orders.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-    api
-      .myOrders()
-      .then((data) => !cancelled && setOrders(data))
-      .catch((e) => !cancelled && setError(e.message))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
+    let alive = true;
+    (async () => {
+      try {
+        const data = await api.myOrders();
+        if (alive) setOrders(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (alive) setError(e.message || "Could not load your orders.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
-  if (loading) return <p className="text-xs opacity-60 mt-6">Loading your orders…</p>;
-  if (error) return <p className="text-xs opacity-60 mt-6">Couldn't load your orders: {error}</p>;
-  if (orders.length === 0) return <p className="text-xs opacity-60 mt-6">You haven't placed any orders yet.</p>;
+  if (loading) return <section className="account-section"><p className="section-kicker">MY ORDERS</p><p className="text-xs opacity-60 mt-3">Loading your orders…</p></section>;
+  if (error) return <section className="account-section"><div className="flex items-center justify-between gap-3"><p className="section-kicker">MY ORDERS</p><button type="button" onClick={load} className="text-[10px] uppercase opacity-55 hover:opacity-100">Try again</button></div><p className="text-xs text-[#A8431E] mt-3">{error}</p></section>;
+
+  const activeOrders = orders.filter((o) => !["delivered", "cancelled"].includes(o.status));
+  const purchaseHistory = orders.filter((o) => ["delivered", "cancelled"].includes(o.status));
 
   return (
-    <div className="mt-8 space-y-4">
-      <p className="section-kicker">PURCHASE HISTORY</p>
-      {orders.map((o) => (
-        <div key={o.id} className="border border-current/10 rounded-2xl p-4">
-          <div className="flex items-center justify-between text-xs opacity-60 mb-3">
-            <span>{new Date(o.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</span>
-            <span className="capitalize">{o.status} · {o.paymentMethod === "cod" ? "Cash on delivery" : o.paymentMethod === "bkash" ? "bKash" : o.paymentMethod === "nagad" ? "Nagad" : ""}</span>
+    <div className="account-orders-stack">
+      <section className="account-section account-orders-section account-current-orders">
+        <div className="account-section-heading">
+          <div>
+            <p className="section-kicker">MY ORDERS</p>
+            <h3>Active orders</h3>
+            <p>{activeOrders.length ? `${activeOrders.length} order${activeOrders.length !== 1 ? "s" : ""} currently in progress.` : "No active orders right now."}</p>
           </div>
-          <div className="space-y-1.5">
-            {o.items.map((it, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
-                <span className="opacity-80">{it.name} × {it.qty}</span>
-                <span className="font-mono">${(it.price * it.qty).toFixed(2)}</span>
-              </div>
-            ))}
+          <button type="button" onClick={load} className="account-refresh">Refresh</button>
+        </div>
+
+        {activeOrders.length ? (
+          <div className="account-order-list">
+            {activeOrders.map((o) => <OrderCard key={o.id} o={o} />)}
           </div>
-          {o.shipping && (
-            <p className="text-xs opacity-50 mt-2">
-              Shipped to: {o.shipping.fullName}, {o.shipping.line1}{o.shipping.city ? `, ${o.shipping.city}` : ""}
-            </p>
-          )}
-          <div className="flex items-center justify-between text-sm font-semibold mt-3 pt-3 border-t border-current/10">
-            <span>Total</span>
-            <span className="font-mono">${o.total.toFixed(2)}</span>
+        ) : (
+          <div className="account-empty-order">
+            <p>Your current orders will appear here with live tracking.</p>
+            <Link to="/shop" className="account-section-link">Explore products <ArrowUpRight size={13} /></Link>
+          </div>
+        )}
+      </section>
+
+      <section className="account-section account-history-section">
+        <div className="account-section-heading">
+          <div>
+            <p className="section-kicker">PURCHASE HISTORY</p>
+            <h3>Past orders</h3>
+            <p>{purchaseHistory.length} completed or cancelled order{purchaseHistory.length !== 1 ? "s" : ""}.</p>
           </div>
         </div>
-      ))}
+
+        {purchaseHistory.length ? (
+          <div className="account-order-list">
+            {purchaseHistory.map((o) => <OrderCard key={o.id} o={o} compact />)}
+          </div>
+        ) : (
+          <div className="account-empty-order">
+            <p>No previous purchases yet.</p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -137,7 +287,8 @@ function ProfileEditor() {
   };
 
   return (
-    <form onSubmit={save} className="mt-6 space-y-4">
+    <section className="account-section account-profile-section">
+    <form onSubmit={save} className="space-y-4">
       <p className="section-kicker">PROFILE</p>
 
       <div className="flex items-center gap-4">
@@ -199,6 +350,7 @@ function ProfileEditor() {
       </button>
       {saved && <span className="text-xs text-emerald-600 ml-3">Saved.</span>}
     </form>
+    </section>
   );
 }
 
@@ -250,29 +402,36 @@ export default function Account() {
             </Link>
           </section>
 
-          <motion.section layout className={`account-panel ${dark ? "account-panel--dark" : ""}`}>
-            {authLoading ? (
+          {authLoading ? (
+            <motion.section layout className={`account-panel ${dark ? "account-panel--dark" : ""}`}>
               <p className="text-sm opacity-60">Loading…</p>
-            ) : user ? (
-              <div className="account-welcome">
-                <p className="section-kicker">MEMBER</p>
-                <h2>Welcome, {user.name}.</h2>
-                <p>You are signed in as {user.email}.</p>
-                {isAdmin && (
-                  <Link to="/admin" className="account-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }}>
-                    <ShieldCheck size={14} /> Go to admin dashboard
+            </motion.section>
+          ) : user ? (
+            <div className="account-member-column">
+              <motion.section layout className={`account-panel account-panel--member ${dark ? "account-panel--dark" : ""}`}>
+                <div className="account-welcome">
+                  <p className="section-kicker">MEMBER</p>
+                  <h2>Welcome, {user.name}.</h2>
+                  <p>You are signed in as {user.email}.</p>
+                  {isAdmin && (
+                    <Link to="/admin" className="account-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }}>
+                      <ShieldCheck size={14} /> Go to admin dashboard
+                    </Link>
+                  )}
+                  <Link to="/" className="account-primary">
+                    Continue exploring
                   </Link>
-                )}
-                <Link to="/" className="account-primary">
-                  Continue exploring
-                </Link>
-                <button onClick={signOut} className="account-secondary">
-                  Sign out
-                </button>
-                <ProfileEditor />
-                <OrderHistory />
-              </div>
-            ) : (
+                  <button onClick={signOut} className="account-secondary">
+                    Sign out
+                  </button>
+                  <ProfileEditor />
+                </div>
+              </motion.section>
+
+              <OrderHistory />
+            </div>
+          ) : (
+            <motion.section layout className={`account-panel ${dark ? "account-panel--dark" : ""}`}>
               <>
                 <div className="account-tabs">
                   <button
@@ -338,8 +497,8 @@ export default function Account() {
                 {authError && <div className="account-success" style={{ color: "#A8431E" }}>{authError}</div>}
                 <p className="account-terms">By continuing, you agree to ArtCanvas terms & privacy.</p>
               </>
-            )}
-          </motion.section>
+            </motion.section>
+          )}
         </div>
       </main>
     </PageTransition>
