@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, CheckCircle2, Truck, Wallet } from "lucide-react";
+import { Loader2, CheckCircle2, Truck, Wallet, CreditCard } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
@@ -10,6 +10,7 @@ const PAYMENT_METHODS = [
   { id: "cod", name: "Cash on Delivery", desc: "Pay in cash when your order arrives.", icon: Truck },
   { id: "bkash", name: "bKash", desc: "Send Money to our bKash number, then enter the Transaction ID.", icon: Wallet },
   { id: "nagad", name: "Nagad", desc: "Send Money to our Nagad number, then enter the Transaction ID.", icon: Wallet },
+  { id: "card", name: "Credit / Debit Card", desc: "Secure card gateway coming soon. No card details are collected yet.", icon: CreditCard, comingSoon: true },
 ];
 
 export default function Checkout() {
@@ -67,6 +68,10 @@ export default function Checkout() {
       setError("Please fill in your name, phone, address and city.");
       return;
     }
+    if (paymentMethod === "card") {
+      setError("Credit / Debit Card checkout is coming soon. Please choose Cash on Delivery, bKash or Nagad for now.");
+      return;
+    }
     if (paymentMethod !== "cod" && !paymentRef.trim()) {
       setError(`Please enter your ${paymentMethod === "bkash" ? "bKash" : "Nagad"} transaction ID.`);
       return;
@@ -90,7 +95,7 @@ export default function Checkout() {
           <h1 className="font-display italic text-3xl font-bold mb-2">Order placed.</h1>
           <p className="text-sm opacity-60 mb-6">
             Thank you, {form.fullName.split(" ")[0]}. Your order total is <span className="font-mono font-semibold">${order.total.toFixed(2)}</span>, to be paid via{" "}
-            {order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod === "bkash" ? "bKash" : "Nagad"}.
+            {order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod === "bkash" ? "bKash" : order.paymentMethod === "nagad" ? "Nagad" : "Credit / Debit Card"}.
           </p>
           <div className="flex items-center justify-center gap-3">
             <Link to="/account" className="px-5 py-2.5 rounded-full text-xs font-semibold uppercase bg-black text-white">
@@ -160,14 +165,14 @@ export default function Checkout() {
                     return (
                       <label
                         key={m.id}
-                        className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition ${
+                        className={`flex items-start gap-3 p-3.5 rounded-xl border transition ${m.comingSoon ? "opacity-55 cursor-not-allowed" : "cursor-pointer"} ${
                           paymentMethod === m.id ? (dark ? "border-[#EDE7D9] bg-white/5" : "border-black bg-black/5") : "border-current/15"
                         }`}
                       >
-                        <input type="radio" name="paymentMethod" value={m.id} checked={paymentMethod === m.id} onChange={() => setPaymentMethod(m.id)} className="mt-1" />
+                        <input type="radio" name="paymentMethod" value={m.id} checked={paymentMethod === m.id} disabled={m.comingSoon} onChange={() => setPaymentMethod(m.id)} className="mt-1" />
                         <Icon size={16} className="mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-sm font-medium">{m.name}</p>
+                          <p className="text-sm font-medium">{m.name} {m.comingSoon && <span className="ml-1 text-[9px] uppercase tracking-wider opacity-60">Coming soon</span>}</p>
                           <p className="text-xs opacity-60">{m.desc}</p>
                         </div>
                       </label>

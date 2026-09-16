@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { img } from "../data/products";
 import { useStore } from "../context/StoreContext";
 
@@ -46,9 +46,11 @@ export default function CartDrawer() {
                       exit={{ opacity: 0, x: 30 }}
                       className="flex gap-3 border-b border-current/10 pb-4"
                     >
-                      <img src={i.image || img(i.seed, 100, 130)} alt={i.name} className="w-16 h-20 object-cover shrink-0 rounded-md" />
-                      <div className="flex-1">
-                        <p className="text-sm">{i.name}</p>
+                      <Link to={`/product/${i.id}`} onClick={() => setCartOpen(false)} className="w-16 h-20 shrink-0 rounded-md overflow-hidden block">
+                        <img src={i.image || img(i.seed, 100, 130)} alt={i.name} className="w-full h-full object-cover transition-transform hover:scale-105" />
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link to={`/product/${i.id}`} onClick={() => setCartOpen(false)} className="text-sm hover:underline">{i.name}</Link>
                         <div className="flex items-center gap-2 mt-1">
                           <button onClick={() => updateQty(i.id, i.qty - 1)} className="w-5 h-5 border border-current/20 rounded flex items-center justify-center">
                             <Minus size={10} />

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Star, Plus, Minus, Share2, Truck, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, Star, Plus, Minus, Share2, Truck } from "lucide-react";
 import PageTransition from "../components/PageTransition";
 import BentoGrid from "../components/BentoGrid";
 import Reveal from "../components/Reveal";
@@ -13,7 +13,11 @@ export default function ProductDetail() {
   const { dark, wishlist, toggleWishlist, addToBag, products, productsLoading } = useStore();
   const product = products.find((p) => p.id === id);
   const [qty, setQty] = useState(1);
-  const productImages = Array.from(new Set((Array.isArray(product?.images) ? product.images : []).concat(product?.image || []).filter(Boolean)));
+  const gallery = useMemo(() => {
+    const list = Array.isArray(product?.images) ? product.images.filter(Boolean) : [];
+    if (product?.image && !list.includes(product.image)) list.unshift(product.image);
+    return list.length ? list.slice(0, 8) : [product?.image || img(product?.seed, 800, 1000)];
+  }, [product]);
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
@@ -38,22 +42,23 @@ export default function ProductDetail() {
             <Link to="/shop" className="hover:underline">Shop</Link> / <Link to={`/shop?category=${product.category}`} className="hover:underline capitalize">{product.category}</Link> / <span className="opacity-80">{product.name}</span>
           </p>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-xl bg-[#ece7df]"
-              >
-                <img src={productImages[activeImage] || img(product.seed, 800, 1000)} alt={`${product.name} view ${activeImage + 1}`} className="w-full h-full object-cover block" />
-                {productImages.length > 1 && <>
-                  <button type="button" onClick={() => setActiveImage((v) => (v - 1 + productImages.length) % productImages.length)} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 text-black flex items-center justify-center shadow-sm" aria-label="Previous product image"><ChevronLeft size={17}/></button>
-                  <button type="button" onClick={() => setActiveImage((v) => (v + 1) % productImages.length)} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 text-black flex items-center justify-center shadow-sm" aria-label="Next product image"><ChevronRight size={17}/></button>
-                  <span className="absolute left-1/2 bottom-3 -translate-x-1/2 rounded-full bg-black/65 text-white px-3 py-1 text-[9px] tracking-[.12em] uppercase">{activeImage + 1} / {productImages.length}</span>
-                </>}
-              </motion.div>
-              {productImages.length > 1 && <div className="mt-3 flex gap-2 overflow-x-auto pb-1">{productImages.map((src, i) => <button key={`${src}-${i}`} type="button" onClick={() => setActiveImage(i)} className={`shrink-0 w-16 h-20 rounded-lg overflow-hidden border ${activeImage === i ? "border-current" : "border-current/10 opacity-65 hover:opacity-100"}`} aria-label={`View product image ${i + 1}`}><img src={src} alt="" className="w-full h-full object-cover" /></button>)}</div>}
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div className="grid md:grid-cols-[minmax(0,1fr)_82px] gap-3 items-start min-w-0">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="aspect-[4/5] rounded-2xl overflow-hidden shadow-xl bg-current/5"
+            >
+              <img src={gallery[activeImage]} alt={`${product.name} view ${activeImage + 1}`} className="w-full h-full object-cover" />
+            </motion.div>
+            {gallery.length > 1 && <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible">
+              {gallery.map((src, index) => (
+                <button type="button" key={`${src}-${index}`} onClick={() => setActiveImage(index)} className={`shrink-0 w-16 h-20 md:w-[76px] md:h-[92px] rounded-xl overflow-hidden border ${index === activeImage ? "border-current" : "border-current/10"}`} aria-label={`View image ${index + 1}`}>
+                  <img src={src} alt="" className="w-full h-full object-cover"/>
+                </button>
+              ))}
+            </div>}
             </div>
 
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>

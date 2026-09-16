@@ -162,17 +162,8 @@ function OrderHistory() {
   const activeOrders = orders.filter((o) => !["delivered", "cancelled"].includes(o.status));
   const purchaseHistory = orders.filter((o) => ["delivered", "cancelled"].includes(o.status));
 
-  const deliveredCount = orders.filter((o) => o.status === "delivered").length;
-  const totalSpent = orders.filter((o) => o.status !== "cancelled").reduce((sum, o) => sum + Number(o.total || 0), 0);
-
   return (
     <div className="account-orders-stack">
-      <section className="account-order-overview" aria-label="Order overview">
-        <div><span>ACTIVE</span><strong>{activeOrders.length}</strong><small>in progress</small></div>
-        <div><span>HISTORY</span><strong>{purchaseHistory.length}</strong><small>past orders</small></div>
-        <div><span>SPENT</span><strong>${totalSpent.toFixed(2)}</strong><small>{deliveredCount} delivered</small></div>
-      </section>
-
       <section className="account-section account-orders-section account-current-orders">
         <div className="account-section-heading">
           <div>

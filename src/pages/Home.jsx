@@ -149,8 +149,8 @@ function pickCurrentlyInteresting(products, count = 6) {
 }
 
 function ProductRail({ products, siteContent }) {
-  const { addToBag } = useStore();
   const EDIT = pickCurrentlyInteresting(products, 6);
+  const { addToBag } = useStore();
   return (
     <section className="edit-editorial section-shell">
       <Reveal className="section-heading-line">
@@ -184,7 +184,15 @@ function ProductRail({ products, siteContent }) {
                 ) : product.sold > 0 ? (
                   <span className="micro-tag !absolute !top-3 !right-3">Best seller</span>
                 ) : null}
-                <button aria-label="Add to bag" disabled={product.inStock === false} onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (product.inStock !== false) addToBag(product); }}><Plus size={16} /></button>
+                <button
+                  type="button"
+                  aria-label={`Add ${product.name} to cart`}
+                  disabled={product.inStock === false}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (product.inStock !== false) addToBag(product); }}
+                  className="disabled:opacity-40"
+                >
+                  <Plus size={16} />
+                </button>
                 <div className="rail-product__reveal">View piece <ArrowUpRight size={13} /></div>
               </div>
               <div className="rail-product__meta">

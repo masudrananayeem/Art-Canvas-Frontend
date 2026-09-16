@@ -16,7 +16,15 @@ const EMPTY_SITE_CONTENT = { heroImage: "", manifestoImage: "", heroHeadline: ""
 
 export function StoreProvider({ children }) {
   const [dark, setDark] = useState(false);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const raw = localStorage.getItem("artcanvas_cart_v1");
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
   const [wishlist, setWishlist] = useState(new Set());
   const [cartOpen, setCartOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -230,6 +238,12 @@ export function StoreProvider({ children }) {
     });
     setCartOpen(true);
   };
+  useEffect(() => {
+    try {
+      localStorage.setItem("artcanvas_cart_v1", JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
+
   const removeFromCart = (id) => setCart((c) => c.filter((i) => i.id !== id));
   const updateQty = (id, qty) => setCart((c) => c.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i)));
   const toggleWishlist = (id) =>

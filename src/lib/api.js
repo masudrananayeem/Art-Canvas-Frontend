@@ -57,6 +57,7 @@ export const api = {
   // messages (client <-> studio)
   sendMessage: (text) => request("/api/messages", { method: "POST", body: { text }, auth: true }),
   myMessages: () => request("/api/messages/me", { auth: true }),
+  subscribeNewsletter: (email) => request("/api/newsletter", { method: "POST", body: { email } }),
 
   // admin
   adminProducts: () => request("/api/admin/products", { auth: true }),
@@ -81,6 +82,7 @@ export const api = {
   adminMessageThreads: () => request("/api/admin/messages/threads", { auth: true }),
   adminLookupEmail: (email) => request("/api/admin/messages/lookup", { method: "POST", body: { email }, auth: true }),
   adminMessagesFor: (uid) => request(`/api/admin/messages/${uid}`, { auth: true }),
+  adminMarkMessagesRead: (uid) => request(`/api/admin/messages/${uid}/read`, { method: "PATCH", auth: true }),
   adminSendMessage: (uid, text) => request(`/api/admin/messages/${uid}`, { method: "POST", body: { text }, auth: true }),
   adminDeleteMessage: (uid, messageId) => request(`/api/admin/messages/${uid}/${messageId}`, { method: "DELETE", auth: true }),
   adminDeleteMessageThread: (uid) => request(`/api/admin/messages/${uid}`, { method: "DELETE", auth: true }),
