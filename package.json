@@ -1,18 +1,19 @@
 {
-  "name": "art-canvas-backend",
+  "name": "artcanvas-frontend-monorepo",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
+  "workspaces": [
+    "apps/client",
+    "apps/admin"
+  ],
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "set-admin": "node scripts/setAdmin.js"
+    "dev:client": "npm --workspace apps/client run dev",
+    "dev:admin": "npm --workspace apps/admin run dev",
+    "build:client": "npm --workspace apps/client run build",
+    "build:admin": "npm --workspace apps/admin run build"
   },
-  "dependencies": {
-    "hono": "^4.6.14"
-  },
-  "devDependencies": {
-    "wrangler": "^3.99.0",
-    "firebase-admin": "^12.7.0"
+  "overrides": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }

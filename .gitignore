@@ -1,4 +1,8 @@
-node_modules
-.dev.vars
-serviceAccountKey.json
-.wrangler
+node_modules/
+.next/
+dist/
+.wrangler/
+.env
+.env.*
+!.env.example
+*.log
