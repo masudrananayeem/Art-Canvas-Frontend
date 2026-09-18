@@ -231,11 +231,19 @@ export default function Checkout() {
             <h3 className="text-xs tracking-widest uppercase opacity-50 mb-4">Order summary</h3>
             <div className="space-y-3 mb-4">
               {cart.map((i) => (
-                <div key={i.id} className="flex gap-3">
+                <div key={i.cartKey || `${i.id}::${i.size || ""}`} className="flex gap-3">
                   <img src={i.image || img(i.seed, 100, 130)} alt={i.name} className="w-12 h-14 object-cover rounded-md shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{i.name}</p>
-                    <p className="text-xs opacity-50">Qty {i.qty}</p>
+                    <div className="flex items-center gap-2 text-xs opacity-50">
+                      <span>Qty {i.qty}</span>
+                      {i.size && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span>Size {i.size}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <span className="font-mono text-sm">${(i.price * i.qty).toFixed(2)}</span>
                 </div>
