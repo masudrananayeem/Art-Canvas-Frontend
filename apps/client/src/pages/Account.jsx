@@ -9,7 +9,6 @@ import { api, uploadProfileImage } from "../lib/api";
 const ORDER_STEPS = ["placed", "confirmed", "processing", "shipped", "delivered"];
 
 function OrderCard({ o, compact = false }) {
-  const { dark } = useStore();
   const [expanded, setExpanded] = useState(false);
   const currentIndex = ORDER_STEPS.indexOf(o.status);
   const cancelled = o.status === "cancelled";
@@ -19,14 +18,10 @@ function OrderCard({ o, compact = false }) {
   const itemCount = (o.items || []).reduce((sum, item) => sum + Number(item?.qty || 0), 0);
 
   return (
-    <article
-      className={`account-order-card ${expanded ? "is-expanded" : ""} ${compact ? "account-order-card--compact" : ""}`}
-      style={dark ? { backgroundColor: "#171717", color: "#F4F1E8", borderColor: "rgba(255,255,255,.10)", boxShadow: "none" } : undefined}
-    >
+    <article className={`account-order-card ${expanded ? "is-expanded" : ""} ${compact ? "account-order-card--compact" : ""}`}>
       <button
         type="button"
         className="account-order-summary"
-        style={dark ? { backgroundColor: "transparent", color: "#F4F1E8" } : undefined}
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
       >
@@ -43,15 +38,15 @@ function OrderCard({ o, compact = false }) {
           <p>{itemCount} item{itemCount !== 1 ? "s" : ""} · {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "—"}</p>
         </div>
         <div className="account-order-summary-total">
-          <strong>৳{Number(o.total || 0).toLocaleString()}</strong>
+          <strong>${Number(o.total || 0).toFixed(2)}</strong>
           <span>{expanded ? "Hide details" : compact ? "View order" : "Track order"}</span>
         </div>
       </button>
 
       {expanded && (
-        <div className="account-order-details" style={dark ? { backgroundColor: "#171717", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+        <div className="account-order-details">
           {!compact && (
-            <div className="account-tracking-block" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+            <div className="account-tracking-block">
               <div className="account-detail-heading">
                 <div>
                   <p className="section-kicker">TRACK ORDER</p>
@@ -79,19 +74,19 @@ function OrderCard({ o, compact = false }) {
           )}
 
           <div className="account-detail-grid">
-            <div className="account-detail-card" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+            <div className="account-detail-card">
               <p className="account-detail-label">ITEMS</p>
               <div className="space-y-2 mt-3">
                 {(o.items || []).map((it, i) => (
                   <div key={`${o.id}-${i}`} className="flex items-center justify-between gap-3 text-xs">
                     <span className="opacity-75">{it?.name || "Item"} × {it?.qty || 0}</span>
-                    <span className="font-mono">৳{(Number(it?.price || 0) * Number(it?.qty || 0)).toLocaleString()}</span>
+                    <span className="font-mono">${(Number(it?.price || 0) * Number(it?.qty || 0)).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="account-detail-card" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+            <div className="account-detail-card">
               <p className="account-detail-label">DELIVERY</p>
               <div className="mt-3 text-xs leading-5">
                 <p className="opacity-80">{o.shipping?.fullName || "—"}</p>
@@ -101,12 +96,12 @@ function OrderCard({ o, compact = false }) {
               </div>
             </div>
 
-            <div className="account-detail-card" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+            <div className="account-detail-card">
               <p className="account-detail-label">PAYMENT</p>
               <div className="mt-3 text-xs leading-5">
                 <p className="capitalize opacity-75">{o.paymentMethod === "cod" ? "Cash on delivery" : o.paymentMethod || "—"}</p>
                 {o.paymentRef && <p className="opacity-55 break-all">Transaction: {o.paymentRef}</p>}
-                <p className="font-semibold font-mono mt-1">Total ৳{Number(o.total || 0).toLocaleString()}</p>
+                <p className="font-semibold font-mono mt-1">Total ${Number(o.total || 0).toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -128,8 +123,7 @@ function OrderCard({ o, compact = false }) {
   );
 }
 
-function OrderHistory() {
-  const { dark } = useStore();
+function OrderHistory({ dark = false }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -162,15 +156,15 @@ function OrderHistory() {
     return () => { alive = false; };
   }, []);
 
-  if (loading) return <section className="account-section" style={dark ? { backgroundColor: "#101010", color: "#F4F1E8", borderColor: "rgba(255,255,255,.10)" } : undefined}><p className="section-kicker">MY ORDERS</p><p className="text-xs opacity-60 mt-3">Loading your orders…</p></section>;
-  if (error) return <section className="account-section" style={dark ? { backgroundColor: "#101010", color: "#F4F1E8", borderColor: "rgba(255,255,255,.10)" } : undefined}><div className="flex items-center justify-between gap-3"><p className="section-kicker">MY ORDERS</p><button type="button" onClick={load} className="text-[10px] uppercase opacity-55 hover:opacity-100">Try again</button></div><p className="text-xs text-[#A8431E] mt-3">{error}</p></section>;
+  if (loading) return <section className="account-section"><p className="section-kicker">MY ORDERS</p><p className="text-xs opacity-60 mt-3">Loading your orders…</p></section>;
+  if (error) return <section className="account-section"><div className="flex items-center justify-between gap-3"><p className="section-kicker">MY ORDERS</p><button type="button" onClick={load} className="text-[10px] uppercase opacity-55 hover:opacity-100">Try again</button></div><p className="text-xs text-[#A8431E] mt-3">{error}</p></section>;
 
   const activeOrders = orders.filter((o) => !["delivered", "cancelled"].includes(o.status));
   const purchaseHistory = orders.filter((o) => ["delivered", "cancelled"].includes(o.status));
 
   return (
-    <div className="account-orders-stack">
-      <section className="account-section account-orders-section account-current-orders" style={dark ? { backgroundColor: "#101010", color: "#F4F1E8", borderColor: "rgba(255,255,255,.10)" } : undefined}>
+    <div className={`account-orders-stack ${dark ? "account-orders-stack--dark" : ""}`}>
+      <section className="account-section account-orders-section account-current-orders">
         <div className="account-section-heading">
           <div>
             <p className="section-kicker">MY ORDERS</p>
@@ -185,14 +179,14 @@ function OrderHistory() {
             {activeOrders.map((o) => <OrderCard key={o.id} o={o} />)}
           </div>
         ) : (
-          <div className="account-empty-order" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+          <div className="account-empty-order">
             <p>Your current orders will appear here with live tracking.</p>
             <Link to="/shop" className="account-section-link">Explore products <ArrowUpRight size={13} /></Link>
           </div>
         )}
       </section>
 
-      <section className="account-section account-history-section" style={dark ? { backgroundColor: "#101010", color: "#F4F1E8", borderColor: "rgba(255,255,255,.10)" } : undefined}>
+      <section className="account-section account-history-section">
         <div className="account-section-heading">
           <div>
             <p className="section-kicker">PURCHASE HISTORY</p>
@@ -206,7 +200,7 @@ function OrderHistory() {
             {purchaseHistory.map((o) => <OrderCard key={o.id} o={o} compact />)}
           </div>
         ) : (
-          <div className="account-empty-order" style={dark ? { backgroundColor: "#141414", color: "#F4F1E8", borderColor: "rgba(255,255,255,.08)" } : undefined}>
+          <div className="account-empty-order">
             <p>No previous purchases yet.</p>
           </div>
         )}
@@ -362,6 +356,8 @@ function ProfileEditor() {
 
 export default function Account() {
   const { dark, user, isAdmin, authLoading, authError, clearAuthError, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut } = useStore();
+  const [circulation, setCirculation] = useState([]);
+  useEffect(() => { if (user) api.myCirculation().then(setCirculation).catch(() => {}); else setCirculation([]); }, [user]);
   const [mode, setMode] = useState("signin");
   const [show, setShow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -434,7 +430,8 @@ export default function Account() {
                 </div>
               </motion.section>
 
-              <OrderHistory />
+              <OrderHistory dark={dark} />
+              {circulation.length > 0 && <section className="account-section account-history-section mt-6"><div className="account-section-heading"><div><p className="section-kicker">CIRCULATION</p><h3>Loans & returns</h3><p>Loan, due date and shipment status.</p></div></div><div className="account-order-list">{circulation.map(r=><article key={r.id} className="account-order-card"><div className="account-order-summary"><div className="account-order-summary-main"><strong>{r.productName}</strong><p>{r.productCode||r.productId} · {r.status}</p><p>Loan {r.loanDate||"—"} · Due {r.dueDate||"—"} · Return {r.returnedDate||"—"}</p>{r.trackingNumber&&<p>Shipment {r.shipmentStatus||"—"} · {r.trackingNumber}</p>}</div></div></article>)}</div></section>}
             </div>
           ) : (
             <motion.section layout className={`account-panel ${dark ? "account-panel--dark" : ""}`}>

@@ -4,18 +4,22 @@ import { GENDERS } from "@/lib/art-constants";
 import { useArtAdmin } from "@/contexts/art-admin-context";
 import { api, uploadAdminImage } from "@/lib/art-api";
 
-const EMPTY_FORM = { name:"", description:"", price:"", category:"clothing", gender:"all", subcategory:"", stock:"", isFeatured:false };
+const EMPTY_FORM = { name:"", productCode:"", description:"", price:"", category:"clothing", gender:"all", subcategory:"", stock:"", sizes:[], isFeatured:false };
 
 function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
   const { categories, subcategories } = useArtAdmin();
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
   const initialImages = Array.isArray(initial.images) && initial.images.length ? initial.images.filter(Boolean) : (initial.image ? [initial.image] : []);
   const [existingImages, setExistingImages] = useState(initialImages);
+  const [sizes, setSizes] = useState(Array.isArray(initial.sizes) ? initial.sizes.map(s => ({ size: s.size || "", stock: Number(s.stock) || 0 })) : []);
   const [pendingFiles, setPendingFiles] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.type === "checkbox" ? e.target.checked : e.target.value }));
   const isClothing = form.category === "clothing";
+  const updateSize = (index, key, value) => setSizes(current => current.map((item, i) => i === index ? { ...item, [key]: key === "stock" ? Math.max(0, Number(value) || 0) : value } : item));
+  const addSize = () => setSizes(current => [...current, { size: "", stock: 0 }]);
+  const removeSize = (index) => setSizes(current => current.filter((_, i) => i !== index));
   const subOptions = isClothing && form.gender !== "all" ? (subcategories[form.gender] || []) : [];
   const previewImages = [...existingImages, ...pendingFiles.map((item) => item.preview)];
 
@@ -62,10 +66,13 @@ function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
       }
       const images = [...existingImages, ...uploadedImages].slice(0, 8);
       if (!image && images[0]) image = images[0];
+      const cleanSizes = isClothing ? sizes.filter(item => item.size.trim()).map(item => ({ size: item.size.trim(), stock: Math.max(0, Math.floor(Number(item.stock) || 0)) })) : [];
+      const normalizedNames = cleanSizes.map(item => item.size.toLowerCase());
+      if (new Set(normalizedNames).size !== normalizedNames.length) throw new Error("Each size can only be added once.");
       const payload = {
-        name: form.name.trim(), description: form.description.trim(), price: Number(form.price), category: form.category,
-        gender: isClothing ? form.gender : "all", subcategory: form.subcategory.trim(), stock: Number(form.stock) || 0,
-        image, imagePublicId, images, isFeatured: !!form.isFeatured,
+        name: form.name.trim(), productCode: form.productCode.trim(), description: form.description.trim(), price: Number(form.price), category: form.category,
+        gender: isClothing ? form.gender : "all", subcategory: form.subcategory.trim(), stock: cleanSizes.length ? cleanSizes.reduce((sum, item) => sum + item.stock, 0) : Number(form.stock) || 0,
+        sizes: cleanSizes, image, imagePublicId, images, isFeatured: !!form.isFeatured,
       };
       if (!payload.name || !Number.isFinite(payload.price)) throw new Error("Name and price are required.");
       if (productId) await api.updateProduct(productId, payload); else await api.createProduct(payload);
@@ -77,12 +84,14 @@ function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
   return <form onSubmit={submit} className="border border-current/10 rounded-2xl p-5 space-y-4 bg-current/[.015]">
     <div className="flex items-center justify-between gap-3"><div><h3 className="font-display italic text-lg font-bold">{productId ? "Edit product" : "Add a new product"}</h3><p className="text-xs opacity-50">Manage all product fields from one place.</p></div>{onCancel && <button type="button" onClick={onCancel} className="w-8 h-8 rounded-full border border-current/15 flex items-center justify-center"><X size={14}/></button>}</div>
     <div className="grid sm:grid-cols-2 gap-4">
-      {[['Name','name','Fragment Overcoat'],['Price (USD)','price','120.00'],['Stock quantity','stock','0']].map(([label,key,placeholder])=><label key={key} className="flex flex-col gap-1 text-xs"><span className="opacity-60">{label}</span><input value={form[key] ?? ""} onChange={set(key)} type={key === "name" ? "text" : "number"} min={key === "stock" ? 0 : 0} step={key === "price" ? "0.01" : "1"} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder={placeholder}/></label>)}
+      {[['Name','name','Fragment Overcoat'],['Product code','productCode','AC-ART-001'],['Price (USD)','price','120.00']].map(([label,key,placeholder])=><label key={key} className="flex flex-col gap-1 text-xs"><span className="opacity-60">{label}</span><input value={form[key] ?? ""} onChange={set(key)} type={key === "price" ? "number" : "text"} min={key === "price" ? 0 : undefined} step={key === "price" ? "0.01" : undefined} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder={placeholder}/></label>)}
       <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Category</span><select value={form.category} onChange={set("category")} className="artcanvas-native-select px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm">{categories.map((c, index)=><option key={`category-${c.id ?? "unknown"}-${index}`} value={c.id}>{c.name}</option>)}</select></label>
       {isClothing && <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Gender</span><select value={form.gender} onChange={set("gender")} className="artcanvas-native-select px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm"><option value="all">All genders</option>{GENDERS.map((g, index) => { const id = typeof g === "string" ? g : g.id; const name = typeof g === "string" ? g.charAt(0).toUpperCase() + g.slice(1) : g.name; return <option key={`gender-${id}-${index}`} value={id}>{name}</option>; })}</select></label>}
       {isClothing && form.gender !== "all" && <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Subcategory</span><select value={form.subcategory} onChange={set("subcategory")} className="artcanvas-native-select px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm"><option value="">—</option>{subOptions.map((s, index)=><option key={`subcategory-${String(s)}-${index}`} value={s}>{s}</option>)}</select></label>}
       {!isClothing && <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Subcategory / style</span><input value={form.subcategory ?? ""} onChange={set("subcategory")} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="e.g. Ceramics, Print, Sculpture"/></label>}
     </div>
+    {isClothing && <div className="space-y-3 border border-current/10 rounded-xl p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs font-semibold">Size & stock</p><p className="text-[10px] opacity-50">Set exactly how many pieces are available for each size.</p></div><div className="flex flex-wrap gap-1.5"><button type="button" onClick={()=>addSize()} className="px-3 py-1.5 rounded-full border border-current/15 text-[10px] uppercase font-semibold">+ Add custom</button>{["S","M","L","XL","XXL"].filter(preset=>!sizes.some(item=>item.size.trim().toLowerCase()===preset.toLowerCase())).map(preset=><button type="button" key={preset} onClick={()=>addSize(preset)} className="px-2.5 py-1.5 rounded-full border border-current/15 text-[9px] uppercase">+ {preset}</button>)}</div></div>{sizes.length === 0 ? <p className="text-[10px] opacity-45">No sizes added. Add sizes such as S, M, L, XL.</p> : <div className="space-y-2">{sizes.map((item,index)=><div key={index} className="grid grid-cols-[1fr_120px_32px] gap-2"><input value={item.size} onChange={e=>updateSize(index,"size",e.target.value)} placeholder="Size (e.g. M)" className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm"/><input type="number" min="0" value={item.stock} onChange={e=>updateSize(index,"stock",e.target.value)} placeholder="Pieces" className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm"/><button type="button" onClick={()=>removeSize(index)} className="rounded-lg border border-[#A8431E]/25 text-[#A8431E]">×</button></div>)}</div>}<div className="flex items-center justify-between gap-3 text-[10px] opacity-60"><span>Total stock: <strong>{sizes.length ? sizes.reduce((sum,item)=>sum+(Number(item.stock)||0),0) : Number(form.stock)||0}</strong></span><span>{sizes.filter(item=>Number(item.stock)>0).length}/{sizes.length} sizes available</span></div></div>}
+    {!sizes.length && <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Total stock quantity</span><input value={form.stock ?? ""} onChange={set("stock")} type="number" min="0" step="1" className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="0"/></label>}
     <label className="flex flex-col gap-1 text-xs"><span className="opacity-60">Description</span><textarea value={form.description ?? ""} onChange={set("description")} rows={4} className="px-3 py-2 rounded-lg border border-current/15 bg-transparent text-sm" placeholder="Short product description"/></label>
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -101,12 +110,12 @@ function ProductForm({ initial = EMPTY_FORM, productId, onSaved, onCancel }) {
 
 function ProductCard({ p, onChanged }) {
   const [editing, setEditing] = useState(false); const [featured, setFeatured] = useState(!!p.isFeatured); const [deleting, setDeleting] = useState(false);
-  const editInitial = useMemo(() => ({ ...p, price: p.price ?? "", stock: p.stock ?? "", gender: p.gender || "all" }), [p]);
+  const editInitial = useMemo(() => ({ ...p, price: p.price ?? "", stock: p.stock ?? "", productCode: p.productCode || "", sizes: Array.isArray(p.sizes) ? p.sizes : [], gender: p.gender || "all" }), [p]);
   const toggleFeatured = async () => { const next = !featured; setFeatured(next); try { await api.updateProduct(p.id, { isFeatured: next }); onChanged(); } catch(e) { setFeatured(!next); alert(e.message); } };
   const remove = async () => { if (!confirm(`Delete "${p.name}"? This cannot be undone.`)) return; setDeleting(true); try { await api.deleteProduct(p.id); onChanged(); } catch(e) { alert(e.message); } finally { setDeleting(false); } };
   if (editing) return <ProductForm productId={p.id} initial={editInitial} onSaved={async()=>{setEditing(false); await onChanged();}} onCancel={()=>setEditing(false)} />;
   return <div className="border border-current/10 rounded-2xl p-3 sm:p-4">
-    <div className="flex items-center gap-3"><img src={p.image || `https://picsum.photos/seed/${p.seed || p.id}/100/120`} alt="" className="w-14 h-16 sm:w-16 sm:h-20 object-cover rounded-lg shrink-0"/><div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{p.name}</p><p className="text-xs opacity-50 capitalize mt-1">{p.category}{p.gender && p.gender !== "all" ? ` · ${p.gender}` : ""}{p.subcategory ? ` · ${p.subcategory}` : ""}</p><div className="flex gap-3 mt-2 text-[10px] opacity-55"><span>${Number(p.price||0).toFixed(2)}</span><span>Stock {p.stock ?? 0}</span>{p.sold > 0 && <span className="flex items-center gap-1"><Flame size={10}/> {p.sold} sold</span>}</div></div><div className="flex gap-1.5 items-center"><button onClick={toggleFeatured} title="Feature on homepage" className={`w-8 h-8 rounded-full border flex items-center justify-center ${featured ? "text-amber-500 border-amber-500" : "border-current/15 opacity-50"}`}><Star size={13} fill={featured ? "currentColor" : "none"}/></button><button onClick={()=>setEditing(true)} title="Edit product" className="w-8 h-8 rounded-full border border-current/15 flex items-center justify-center"><Edit3 size={13}/></button><button onClick={remove} disabled={deleting} title="Delete product" className="w-8 h-8 rounded-full border border-[#A8431E]/25 text-[#A8431E] flex items-center justify-center">{deleting?<Loader2 size={13} className="animate-spin"/>:<Trash2 size={13}/>}</button></div></div>
+    <div className="flex items-center gap-3"><img src={p.image || `https://picsum.photos/seed/${p.seed || p.id}/100/120`} alt="" className="w-14 h-16 sm:w-16 sm:h-20 object-cover rounded-lg shrink-0"/><div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{p.name}</p><p className="text-[10px] opacity-45 mt-0.5">Code: {p.productCode || "—"}</p><p className="text-xs opacity-50 capitalize mt-1">{p.category}{p.gender && p.gender !== "all" ? ` · ${p.gender}` : ""}{p.subcategory ? ` · ${p.subcategory}` : ""}</p><div className="flex gap-3 mt-2 text-[10px] opacity-55"><span>${Number(p.price||0).toFixed(2)}</span><span>Stock {p.stock ?? 0}</span>{Array.isArray(p.sizes) && p.sizes.length > 0 && <span>Sizes {p.sizes.map(s=>`${s.size}:${s.stock}`).join(" · ")}</span>}{p.sold > 0 && <span className="flex items-center gap-1"><Flame size={10}/> {p.sold} sold</span>}</div></div><div className="flex gap-1.5 items-center"><button onClick={toggleFeatured} title="Feature on homepage" className={`w-8 h-8 rounded-full border flex items-center justify-center ${featured ? "text-amber-500 border-amber-500" : "border-current/15 opacity-50"}`}><Star size={13} fill={featured ? "currentColor" : "none"}/></button><button onClick={()=>setEditing(true)} title="Edit product" className="w-8 h-8 rounded-full border border-current/15 flex items-center justify-center"><Edit3 size={13}/></button><button onClick={remove} disabled={deleting} title="Delete product" className="w-8 h-8 rounded-full border border-[#A8431E]/25 text-[#A8431E] flex items-center justify-center">{deleting?<Loader2 size={13} className="animate-spin"/>:<Trash2 size={13}/>}</button></div></div>
   </div>;
 }
 
@@ -115,7 +124,7 @@ export default function AdminProducts() {
   const [products, setProducts] = useState([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [addOpen, setAddOpen] = useState(false); const [query, setQuery] = useState(""); const [open, setOpen] = useState({}); const addRef = useRef(null);
   const load = async () => { setLoading(true); setError(""); try { const list = await api.adminProducts(); setProducts(Array.isArray(list)?list:[]); } catch(e){setError(e.message||"Could not load products.");} finally {setLoading(false);} await refreshProducts(); };
   useEffect(()=>{load();},[]);
-  const filtered = useMemo(()=>{const q=query.trim().toLowerCase(); return products.filter(p=>!q || [p.name,p.description,p.category,p.gender,p.subcategory].filter(Boolean).some(v=>String(v).toLowerCase().includes(q)));},[products,query]);
+  const filtered = useMemo(()=>{const q=query.trim().toLowerCase(); return products.filter(p=>!q || [p.name,p.productCode,p.description,p.category,p.gender,p.subcategory, ...(Array.isArray(p.sizes) ? p.sizes.map(s=>s.size) : [])].filter(Boolean).some(v=>String(v).toLowerCase().includes(q)));},[products,query]);
   const groups = useMemo(() => {
     const grouped = categories
       .map((c, index) => ({ ...c, groupKey: `category-${c.id || index}-${index}`, items: filtered.filter(p => p.category === c.id) }))

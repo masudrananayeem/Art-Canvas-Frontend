@@ -39,7 +39,7 @@ export default function CartDrawer() {
                 <AnimatePresence>
                   {cart.map((i) => (
                     <motion.div
-                      key={i.id}
+                      key={i.cartKey || i.id}
                       layout
                       initial={{ opacity: 0, x: 30 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -50,19 +50,19 @@ export default function CartDrawer() {
                         <img src={i.image || img(i.seed, 100, 130)} alt={i.name} className="w-full h-full object-cover transition-transform hover:scale-105" />
                       </Link>
                       <div className="flex-1 min-w-0">
-                        <Link to={`/product/${i.id}`} onClick={() => setCartOpen(false)} className="text-sm hover:underline">{i.name}</Link>
+                        <Link to={`/product/${i.id}`} onClick={() => setCartOpen(false)} className="text-sm hover:underline">{i.name}</Link>{i.size && <span className="block text-[10px] opacity-50 mt-0.5">Size: {i.size}</span>}
                         <div className="flex items-center gap-2 mt-1">
-                          <button onClick={() => updateQty(i.id, i.qty - 1)} className="w-5 h-5 border border-current/20 rounded flex items-center justify-center">
+                          <button onClick={() => updateQty(i.cartKey || i.id, i.qty - 1)} className="w-5 h-5 border border-current/20 rounded flex items-center justify-center">
                             <Minus size={10} />
                           </button>
                           <span className="text-xs">{i.qty}</span>
-                          <button onClick={() => updateQty(i.id, i.qty + 1)} className="w-5 h-5 border border-current/20 rounded flex items-center justify-center">
+                          <button onClick={() => updateQty(i.cartKey || i.id, i.qty + 1)} className="w-5 h-5 border border-current/20 rounded flex items-center justify-center">
                             <Plus size={10} />
                           </button>
                         </div>
                         <span className="font-mono text-sm">${(i.price * i.qty).toFixed(2)}</span>
                       </div>
-                      <button onClick={() => removeFromCart(i.id)} className="text-xs opacity-50 hover:opacity-100">
+                      <button onClick={() => removeFromCart(i.cartKey || i.id)} className="text-xs opacity-50 hover:opacity-100">
                         Remove
                       </button>
                     </motion.div>

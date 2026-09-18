@@ -157,7 +157,7 @@ export default function AdminMessages() {
         ) : (
           <>
             <header className="px-5 py-4 border-b border-current/10 flex items-center justify-between gap-3">
-              <div className="min-w-0"><p className="font-semibold text-sm truncate">{active.name || active.email || "Client"}</p><p className="text-xs opacity-45 truncate">{active.email || "Admin inbox"} · messages are marked seen when opened</p></div>
+              <div className="min-w-0"><p className="font-semibold text-sm truncate">{active.name || active.email || "Client"}</p><p className="text-xs opacity-45 truncate">{active.email || "Admin inbox"} · replies are emailed to the client</p></div>
               <button type="button" onClick={deleteThread} disabled={busy === "thread"} className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-[#A8431E]/25 text-[#A8431E] text-[10px] uppercase font-semibold">{busy === "thread" ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Delete inbox</button>
             </header>
 

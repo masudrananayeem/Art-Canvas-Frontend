@@ -19,14 +19,14 @@ export default function ProductCard({ p, size = "md" }) {
   return (
     <StaggerItem className="h-full">
       <motion.article whileHover={{ y: -5 }} transition={{ duration: .25 }} className={`group h-full overflow-hidden border ${v.radius} ${dark ? "border-white/10 bg-[#1a1a17]" : "border-black/8 bg-white"}`}>
-        <Link to={`/product/${p.id}`} className={`relative ${v.aspect} overflow-hidden block bg-[#ece7df]`}>
-          <motion.img src={p.image || img(p.seed)} alt={p.name} loading="lazy" className="w-full h-full object-cover" whileHover={{ scale: 1.055 }} transition={{ duration: .55 }} />
+        <Link to={`/product/${p.id}`} className={`relative ${v.aspect} overflow-hidden block bg-[#ece7df] cursor-pointer`} title={`View ${p.name}`}>
+          <motion.img src={p.image || img(p.seed)} alt={p.name} loading="lazy" className="w-full h-full object-cover" whileHover={{ scale: 1.12 }} transition={{ duration: .55 }} />
           {p.inStock === false && <div className="absolute inset-0 flex items-center justify-center bg-black/40"><span className="micro-tag !bg-black/80 !text-white">Out of Stock</span></div>}
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             <span className="micro-tag">{p.category === "clothing" ? p.gender : p.category}</span>
             {p.subcategory && <span className="micro-tag">{p.subcategory}</span>}
           </div>
-          <button onClick={(e) => { e.preventDefault(); toggleWishlist(p.id); }} className={`absolute top-3 right-3 ${v.btn} rounded-full flex items-center justify-center backdrop-blur ${dark ? "bg-black/45 text-white" : "bg-white/85"}`} aria-label="Save item"><Heart size={14} className={wished ? "fill-[#A8431E] text-[#A8431E]" : ""} /></button>
+          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(p.id); }} className={`absolute top-3 right-3 ${v.btn} rounded-full flex items-center justify-center backdrop-blur ${dark ? "bg-black/45 text-white" : "bg-white/85"}`} aria-label="Save item"><Heart size={14} className={wished ? "fill-[#A8431E] text-[#A8431E]" : ""} /></button>
           <div className="absolute bottom-3 right-3 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all hidden sm:flex"><span className="circle-action"><ArrowUpRight size={14} /></span></div>
         </Link>
         <div className={`${v.pad} flex flex-col gap-1`}>

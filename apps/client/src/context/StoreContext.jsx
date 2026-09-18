@@ -229,12 +229,17 @@ export function StoreProvider({ children }) {
     }
   }, [user]);
 
-  const addToBag = (product, qty = 1) => {
+  const addToBag = (product, qty = 1, size = "") => {
     if (product.inStock === false) return;
+    const sizeData = Array.isArray(product.sizes) ? product.sizes.find((s) => String(s?.size || "") === String(size || "")) : null;
+    const maxAvailable = sizeData ? Math.max(0, Number(sizeData.stock) || 0) : Infinity;
+    if (Array.isArray(product.sizes) && product.sizes.length && (!size || maxAvailable <= 0)) return;
+    const key = `${product.id}::${size}`;
     setCart((c) => {
-      const existing = c.find((i) => i.id === product.id);
-      if (existing) return c.map((i) => (i.id === product.id ? { ...i, qty: i.qty + qty } : i));
-      return [...c, { ...product, qty }];
+      const existing = c.find((i) => i.cartKey === key);
+      const nextQty = Number.isFinite(maxAvailable) ? Math.min(maxAvailable, (existing?.qty || 0) + qty) : (existing?.qty || 0) + qty;
+      if (existing) return c.map((i) => (i.cartKey === key ? { ...i, qty: nextQty } : i));
+      return [...c, { ...product, qty: Number.isFinite(maxAvailable) ? Math.min(maxAvailable, qty) : qty, size, cartKey: key }];
     });
     setCartOpen(true);
   };
@@ -244,8 +249,13 @@ export function StoreProvider({ children }) {
     } catch {}
   }, [cart]);
 
-  const removeFromCart = (id) => setCart((c) => c.filter((i) => i.id !== id));
-  const updateQty = (id, qty) => setCart((c) => c.map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i)));
+  const removeFromCart = (id) => setCart((c) => c.filter((i) => (i.cartKey || i.id) !== id));
+  const updateQty = (id, qty) => setCart((c) => c.map((i) => {
+    if ((i.cartKey || i.id) !== id) return i;
+    const sizeData = Array.isArray(i.sizes) ? i.sizes.find((s) => String(s?.size || "") === String(i.size || "")) : null;
+    const max = sizeData ? Math.max(1, Number(sizeData.stock) || 0) : Infinity;
+    return { ...i, qty: Number.isFinite(max) ? Math.min(max, Math.max(1, qty)) : Math.max(1, qty) };
+  }));
   const toggleWishlist = (id) =>
     setWishlist((w) => {
       const n = new Set(w);
@@ -259,7 +269,7 @@ export function StoreProvider({ children }) {
     if (!user) throw new Error("Sign in to check out.");
     if (cart.length === 0) throw new Error("Your bag is empty.");
     const order = await api.placeOrder(
-      cart.map((i) => ({ id: i.id, qty: i.qty })),
+      cart.map((i) => ({ id: i.id, qty: i.qty, size: i.size || "" })),
       shipping,
       paymentMethod,
       paymentRef,
