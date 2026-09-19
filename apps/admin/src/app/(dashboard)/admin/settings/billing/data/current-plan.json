@@ -1,0 +1,10 @@
+{
+  "id": "professional",
+  "name": "Professional",
+  "description": "Ideal for growing businesses",
+  "price": "$79",
+  "frequency": "/month",
+  "status": "Active",
+  "renewsOn": "October 19, 2026",
+  "paymentMethod": "Visa ending in 4242"
+}

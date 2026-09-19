@@ -1,0 +1,23 @@
+[
+  {
+    "id": "inv_2026_09",
+    "date": "Sep 19, 2026",
+    "plan": "Professional",
+    "amount": "$79.00",
+    "status": "Paid"
+  },
+  {
+    "id": "inv_2026_08",
+    "date": "Aug 19, 2026",
+    "plan": "Professional",
+    "amount": "$79.00",
+    "status": "Paid"
+  },
+  {
+    "id": "inv_2026_07",
+    "date": "Jul 19, 2026",
+    "plan": "Professional",
+    "amount": "$79.00",
+    "status": "Paid"
+  }
+]
