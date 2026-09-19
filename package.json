@@ -15,5 +15,13 @@
   "overrides": {
     "react": "19.2.8",
     "react-dom": "19.2.8"
+  },
+  "allowScripts": {
+    "@firebase/util@1.12.1": true,
+    "@firebase/util@1.15.3": true,
+    "protobufjs@7.6.6": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true,
+    "fsevents@2.3.3": true
   }
 }
